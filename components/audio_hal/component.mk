@@ -29,4 +29,7 @@ COMPONENT_SRCDIRS += ./driver/zl38063 ./driver/zl38063/api_lib ./driver/zl38063/
 COMPONENT_ADD_LDFLAGS += -L$(COMPONENT_PATH)/driver/zl38063/firmware -lfirmware
 endif
 
-
+ifdef CONFIG_M5STACK_NODE_BOARD
+COMPONENT_ADD_INCLUDEDIRS += ./driver/wm8978 ./board/m5stack_node
+COMPONENT_SRCDIRS += ./driver/wm8978 ./board/m5stack_node
+endif

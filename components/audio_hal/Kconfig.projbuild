@@ -2,10 +2,11 @@ menu "Audio HAL"
 
 choice AUDIO_BOARD
     prompt "Audio board"
-    default ESP_LYRAT_V4_3_BOARD
+    default M5STACK_NODE_BOARD
     help
         Select an audio board to use with the ESP-ADF
-
+config M5STACK_NODE_BOARD
+    bool "M5Stack Node"
 config ESP_LYRAT_V4_3_BOARD
     bool "ESP32-Lyrat V4.3"
 config ESP_LYRAT_V4_2_BOARD

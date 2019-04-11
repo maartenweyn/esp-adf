@@ -27,7 +27,7 @@
 #include "esp_sr_iface.h"
 #include "esp_sr_models.h"
 
-static const char *TAG = "example_asr_keywords";
+static const char *SPEAK_TAG = "example_asr_keywords";
 
 static const char *EVENT_TAG = "asr_event";
 
@@ -57,10 +57,10 @@ void app_main()
 #endif
 
     esp_log_level_set("*", ESP_LOG_WARN);
-    esp_log_level_set(TAG, ESP_LOG_INFO);
+    esp_log_level_set(SPEAK_TAG, ESP_LOG_INFO);
     esp_log_level_set(EVENT_TAG, ESP_LOG_INFO);
 
-    ESP_LOGI(TAG, "Initialize SR handle");
+    ESP_LOGI(SPEAK_TAG, "Initialize SR handle");
 #if CONFIG_SR_MODEL_WN4_QUANT
     const esp_sr_iface_t *model = &esp_sr_wakenet4_quantized;
 #else
@@ -70,7 +70,7 @@ void app_main()
     int num = model->get_word_num(iface);
     for (int i = 1; i <= num; i++) {
         char *name = model->get_word_name(iface, i);
-        ESP_LOGI(TAG, "keywords: %s (index = %d)", name, i);
+        ESP_LOGI(SPEAK_TAG, "keywords: %s (index = %d)", name, i);
     }
     float threshold = model->get_det_threshold_by_mode(iface, DET_MODE_90, 1);
     int sample_rate = model->get_samp_rate(iface);
@@ -133,40 +133,40 @@ void app_main()
         int keyword = model->detect(iface, (int16_t *)buff);
         switch (keyword) {
             case WAKE_UP:
-                ESP_LOGI(TAG, "Wake up");
+                ESP_LOGI(SPEAK_TAG, "Wake up");
                 break;
             case OPEN_THE_LIGHT:
-                ESP_LOGI(TAG, "Turn on the light");
+                ESP_LOGI(SPEAK_TAG, "Turn on the light");
 #if defined CONFIG_ESP_LYRAT_V4_3_BOARD
                 gpio_set_level(get_green_led_gpio(), 1);
 #endif
                 break;
             case CLOSE_THE_LIGHT:
-                ESP_LOGI(TAG, "Turn off the light");
+                ESP_LOGI(SPEAK_TAG, "Turn off the light");
 #if defined CONFIG_ESP_LYRAT_V4_3_BOARD
                 gpio_set_level(get_green_led_gpio(), 0);
 #endif
                 break;
             case VOLUME_INCREASE:
-                ESP_LOGI(TAG, "volume increase");
+                ESP_LOGI(SPEAK_TAG, "volume increase");
                 break;
             case VOLUME_DOWN:
-                ESP_LOGI(TAG, "volume down");
+                ESP_LOGI(SPEAK_TAG, "volume down");
                 break;
             case PLAY:
-                ESP_LOGI(TAG, "play");
+                ESP_LOGI(SPEAK_TAG, "play");
                 break;
             case PAUSE:
-                ESP_LOGI(TAG, "pause");
+                ESP_LOGI(SPEAK_TAG, "pause");
                 break;
             case MUTE:
-                ESP_LOGI(TAG, "mute");
+                ESP_LOGI(SPEAK_TAG, "mute");
                 break;
             case PLAY_LOCAL_MUSIC:
-                ESP_LOGI(TAG, "play local music");
+                ESP_LOGI(SPEAK_TAG, "play local music");
                 break;
             default:
-                ESP_LOGD(TAG, "Not supported keyword");
+                ESP_LOGD(SPEAK_TAG, "Not supported keyword");
                 break;
         }
 

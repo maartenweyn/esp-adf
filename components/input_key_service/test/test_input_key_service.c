@@ -55,6 +55,15 @@ static periph_service_handle_t test_input_key_service_create()
     TEST_ASSERT_FALSE(esp_periph_start(set, adc_btn_handle));
 #endif
 
+#if CONFIG_M5STACK_NODE_BOARD
+    periph_button_cfg_t btn_cfg = {
+        .gpio_mask = (1ULL << get_input_rec_id()) | (1ULL << get_input_set_id()) | (1ULL << get_input_play_id()),
+    };
+    esp_periph_handle_t button_handle = periph_button_init(&btn_cfg);
+    TEST_ASSERT_NOT_NULL(button_handle);
+    TEST_ASSERT_FALSE(esp_periph_start(set, button_handle));
+#endif
+
     input_key_service_info_t input_info[] = INPUT_KEY_DEFAULT_INFO();
     periph_service_handle_t input_key_handle = input_key_service_create(set);
     TEST_ASSERT_NOT_NULL(input_key_handle);
