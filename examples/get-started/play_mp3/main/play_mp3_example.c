@@ -28,6 +28,9 @@
 #include "filter_resample.h"
 #include "esp_sr_iface.h"
 #include "esp_sr_models.h"
+#include "tftspi.h"
+#include "tft.h"
+#include "neopixel.h"
 
 static const char *TAG = "PLAY_MP3_FLASH";
 /*
@@ -36,6 +39,7 @@ static const char *TAG = "PLAY_MP3_FLASH";
 */
 extern const uint8_t adf_music_mp3_start[] asm("_binary_adf_music_mp3_start");
 extern const uint8_t adf_music_mp3_end[]   asm("_binary_adf_music_mp3_end");
+void ledSetAll(uint32_t color);
 
 int mp3_music_read_cb(audio_element_handle_t el, char *buf, int len, TickType_t wait_time, void *ctx)
 {
@@ -243,9 +247,12 @@ void speakReg()
                 break;
             case OPEN_THE_LIGHT:
                 ESP_LOGI(SPEAK_TAG, "Turn on the light");
+                ledSetAll(0xff0000);
+
                 break;
             case CLOSE_THE_LIGHT:
                 ESP_LOGI(SPEAK_TAG, "Turn off the light");
+                ledSetAll(0x000000);
                 break;
             case VOLUME_INCREASE:
                 ESP_LOGI(SPEAK_TAG, "volume increase");
@@ -296,7 +303,148 @@ void speakReg()
     buff = NULL;
 }
 
+#define SPI_BUS TFT_HSPI_HOST
+
+void lcdInit(void){
+        //test_sd_card();
+    // ========  PREPARE DISPLAY INITIALIZATION  =========
+    esp_err_t ret;
+
+    // ====================================================================
+    // === Pins MUST be initialized before SPI interface initialization ===
+    // ====================================================================
+    TFT_PinsInit();
+
+    // ====  CONFIGURE SPI DEVICES(s)  ====================================================================================
+
+    spi_lobo_device_handle_t spi;
+	
+    spi_lobo_bus_config_t buscfg={
+        .miso_io_num=PIN_NUM_MISO,				// set SPI MISO pin
+        .mosi_io_num=PIN_NUM_MOSI,				// set SPI MOSI pin
+        .sclk_io_num=PIN_NUM_CLK,				// set SPI CLK pin
+        .quadwp_io_num=-1,
+        .quadhd_io_num=-1,
+		.max_transfer_sz = 6*1024,
+    };
+    spi_lobo_device_interface_config_t devcfg={
+        .clock_speed_hz=8000000,                // Initial clock out at 8 MHz
+        .mode=0,                                // SPI mode 0
+        .spics_io_num=-1,                       // we will use external CS pin
+		.spics_ext_io_num=PIN_NUM_CS,           // external CS pin
+		.flags=LB_SPI_DEVICE_HALFDUPLEX,        // ALWAYS SET  to HALF DUPLEX MODE!! for display spi
+    };
+
+    vTaskDelay(500 / portTICK_RATE_MS);
+	printf("\r\n==============================\r\n");
+    printf("TFT display DEMO, LoBo 11/2017\r\n");
+	printf("==============================\r\n");
+    printf("Pins used: miso=%d, mosi=%d, sck=%d, cs=%d\r\n", PIN_NUM_MISO, PIN_NUM_MOSI, PIN_NUM_CLK, PIN_NUM_CS);
+	printf("==============================\r\n\r\n");
+
+	// ==================================================================
+	// ==== Initialize the SPI bus and attach the LCD to the SPI bus ====
+
+	ret=spi_lobo_bus_add_device(SPI_BUS, &buscfg, &devcfg, &spi);
+    assert(ret==ESP_OK);
+	printf("SPI: display device added to spi bus (%d)\r\n", SPI_BUS);
+	disp_spi = spi;
+
+	// ==== Test select/deselect ====
+	ret = spi_lobo_device_select(spi, 1);
+    assert(ret==ESP_OK);
+	ret = spi_lobo_device_deselect(spi);
+    assert(ret==ESP_OK);
+
+	printf("SPI: attached display device, speed=%u\r\n", spi_lobo_get_speed(spi));
+	printf("SPI: bus uses native pins: %s\r\n", spi_lobo_uses_native_pins(spi) ? "true" : "false");
+
+
+	printf("SPI: display init...\r\n");
+	TFT_display_init();
+    printf("OK\r\n");
+	// ---- Detect maximum read speed ----
+	max_rdclock = 40000000;
+	printf("SPI: Max rd speed = %u\r\n", max_rdclock);
+
+    // ==== Set SPI clock used for display operations ====
+	spi_lobo_set_speed(spi, DEFAULT_SPI_CLOCK);
+	printf("SPI: Changed speed to %u\r\n", spi_lobo_get_speed(spi));
+    printf("\r\n---------------------\r\n");
+	printf("Graphics demo started\r\n");
+	printf("---------------------\r\n");
+}
+
+// neopixel
+
+typedef struct _machine_neopixel_obj_t {
+    rmt_channel_t channel;
+    int gpio_num;
+    pixel_settings_t px;
+} neopixel_obj_t;
+
+neopixel_obj_t* nodeNeopixel;
+
+static neopixel_obj_t* usr_neopixel_init(int gpio_num, uint16_t num, uint16_t rmtchan) {
+    neopixel_obj_t* neopixel_n = (neopixel_obj_t *)malloc(sizeof(neopixel_obj_t));
+
+    neopixel_n->px.timings.mark.level0 = 1;
+	neopixel_n->px.timings.mark.level1 = 0;
+	neopixel_n->px.timings.space.level0 = 1;
+	neopixel_n->px.timings.space.level1 = 0;
+	neopixel_n->px.timings.reset.level0 = 0;
+	neopixel_n->px.timings.reset.level1 = 0;
+	neopixel_n->px.timings.mark.duration0 = 12,
+
+    neopixel_n->px.nbits = 24;
+    neopixel_n->px.timings.mark.duration1 = 14;
+    neopixel_n->px.timings.space.duration0 = 7;
+    neopixel_n->px.timings.space.duration1 = 16;
+    neopixel_n->px.timings.reset.duration0 = 600;
+    neopixel_n->px.timings.reset.duration1 = 600;
+
+    neopixel_n->channel = rmtchan;
+    neopixel_n->gpio_num = gpio_num;
+    neopixel_n->px.pixel_count = num;
+    neopixel_n->px.pixels = (uint8_t *)malloc((neopixel_n->px.nbits/8) * neopixel_n->px.pixel_count);
+    neopixel_n->px.brightness = 50;
+    sprintf(neopixel_n->px.color_order, "GRBW");
+
+    if (neopixel_init(neopixel_n->gpio_num, rmtchan) != ESP_OK) {
+        printf("neopixel init error\r\n");
+        return ;
+    } 
+
+    printf("neopixel init ok...\r\n");
+
+    np_clear(&neopixel_n->px);
+    np_show(&neopixel_n->px, neopixel_n->channel);
+    return neopixel_n;
+}
+
+void ledSetAll(uint32_t color) {
+    color = color << 8;
+    for(uint8_t i = 0; i < 12; i++) {
+        np_set_pixel_color(&nodeNeopixel->px, i, color);
+    }
+    np_show(&nodeNeopixel->px, nodeNeopixel->channel);
+}
+
 void app_main(void) {
+    lcdInit();
+    font_rotate = 0;
+	text_wrap = 0;
+	font_transparent = 0;
+	font_forceFixed = 0;
+	gray_scale = 0;
+    TFT_setGammaCurve(DEFAULT_GAMMA_CURVE);
+	TFT_setRotation(LANDSCAPE);
+	TFT_setFont(DEJAVU24_FONT, NULL);
+	TFT_resetclipwin();
+    TFT_fillScreen(TFT_BLACK);
+	TFT_print("Initializing SPIFFS...", CENTER, CENTER);
+    nodeNeopixel = usr_neopixel_init(GPIO_NUM_15, 12, 1);
+    ledSetAll(16579836);
     playMP3();
     speakReg();
 }
