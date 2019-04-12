@@ -135,8 +135,8 @@ esp_err_t wm8978_init(audio_hal_codec_config_t *cfg)
 	// ret |= wm8978_write_reg(6,0);		//R6,MCLK由外部提供
 	ret |= wm8978_write_reg(43,1<<4);	//R43,INVROUT2反向,驱动喇叭
 	ret |= wm8978_write_reg(47,1<<8);	//R47设置,PGABOOSTL,左通道MIC获得20倍增益
-	ret |= wm8978_write_reg(48,1<<8);	//R48设置,PGABOOSTR,右通道MIC获得20倍增益
-	ret |= wm8978_write_reg(49,1<<1);	//R49,TSDEN,开启过热保护
+	ret |= wm8978_write_reg(48,0x100);	//R48设置,PGABOOSTR,右通道MIC获得20倍增益
+	ret |= wm8978_write_reg(49,0x100);	//R49,TSDEN,开启过热保护
 	ret |= wm8978_write_reg(10,1<<3);	//R10,SOFTMUTE关闭,128x采样,最佳SNR
 	ret |= wm8978_write_reg(14,1<<3);	//R14,ADC 128x采样率
 
@@ -149,8 +149,8 @@ esp_err_t wm8978_init(audio_hal_codec_config_t *cfg)
     WM8978_MIC_Gain(25);
     WM8978_AUX_Gain(0);
     WM8978_LINEIN_Gain(0);
-    WM8978_SPKvol_Set(60);
-    WM8978_HPvol_Set(15,15);
+    WM8978_SPKvol_Set(63);
+    WM8978_HPvol_Set(63,63);
     WM8978_EQ_3D_Dir(0);
     WM8978_EQ1_Set(0,24);
     WM8978_EQ2_Set(0,24);

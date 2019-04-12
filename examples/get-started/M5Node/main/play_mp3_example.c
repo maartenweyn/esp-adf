@@ -31,6 +31,14 @@
 #include "tftspi.h"
 #include "tft.h"
 #include "neopixel.h"
+#include "dht12.h"
+
+#define BTN_A   39
+#define BTN_B   38
+#define BTN_C   37
+#define IR_IN   35
+#define IR_OUT  12
+#define BTN  ((1ULL<<BTN_A) | (1ULL<<BTN_B) | (1ULL<<BTN_C) | (1ULL<<IR_IN))
 
 static const char *TAG = "PLAY_MP3_FLASH";
 /*
@@ -139,10 +147,6 @@ void playMP3(void)
     /* Release all resources */
     audio_pipeline_unregister(pipeline, i2s_stream_writer);
     audio_pipeline_unregister(pipeline, mp3_decoder);
-#if (CONFIG_ESP_LYRATD_MSC_V2_1_BOARD || CONFIG_ESP_LYRATD_MSC_V2_2_BOARD)
-    audio_pipeline_unregister(pipeline, filter);
-    audio_element_deinit(filter);
-#endif
     audio_pipeline_deinit(pipeline);
     audio_element_deinit(i2s_stream_writer);
     audio_element_deinit(mp3_decoder);
@@ -238,7 +242,7 @@ void speakReg()
 
     ESP_LOGI(EVENT_TAG, "[ 5 ] Start audio_pipeline");
     audio_pipeline_run(pipeline);
-    while (1) {
+    while (gpio_get_level(BTN_B)) {
         raw_stream_read(raw_read, (char *)buff, audio_chunksize * sizeof(short));
         int keyword = model->detect(iface, (int16_t *)buff);
         switch (keyword) {
@@ -430,7 +434,26 @@ void ledSetAll(uint32_t color) {
     np_show(&nodeNeopixel->px, nodeNeopixel->channel);
 }
 
+float tmp, hum;
+uint8_t irData = 1;
+uint8_t irDateLast = 1;
 void app_main(void) {
+    gpio_config_t io_conf;
+    //bit mask of the pins, use GPIO4/5 here
+    io_conf.pin_bit_mask = BTN;
+    //set as input mode    
+    io_conf.mode = GPIO_MODE_INPUT;
+    //enable pull-up mode
+    io_conf.pull_up_en = 1;
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+
+    gpio_config(&io_conf);
+
+    io_conf.pin_bit_mask = 1UL << IR_OUT;
+    //set as input mode    
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    gpio_config(&io_conf);
+    gpio_set_level(IR_OUT, 1);
     lcdInit();
     font_rotate = 0;
 	text_wrap = 0;
@@ -442,9 +465,23 @@ void app_main(void) {
 	TFT_setFont(DEJAVU24_FONT, NULL);
 	TFT_resetclipwin();
     TFT_fillScreen(TFT_BLACK);
-	TFT_print("Initializing SPIFFS...", CENTER, CENTER);
+
     nodeNeopixel = usr_neopixel_init(GPIO_NUM_15, 12, 1);
     ledSetAll(16579836);
+    // dht12_init();
     playMP3();
+    TFT_print("Node TEST", CENTER, CENTER);
     speakReg();
+    while(1) {
+        dataRead(&tmp, &hum);
+        char dataStr[20];
+        sprintf(dataStr, "tmp:%0.2f, hum:%0.2f", tmp, hum);
+        TFT_print(dataStr, 10, 10);
+        irData = gpio_get_level(IR_IN);
+        if(irData != irDateLast) {
+            TFT_print("IR OK", CENTER, 50);
+        }
+        irDateLast = irData;
+        vTaskDelay(10 / portTICK_RATE_MS);
+    }
 }
