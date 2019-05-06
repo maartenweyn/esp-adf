@@ -36,6 +36,8 @@
 // Memory usage : 2724 bytes
 // # characters : 95
 
+#include "sdkconfig.h"
+
 const unsigned char tft_Dejavu24[] =
 {
 0x00, 0x17, 0x00, 0x00,

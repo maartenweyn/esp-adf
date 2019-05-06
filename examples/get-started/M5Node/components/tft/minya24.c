@@ -21,7 +21,9 @@
 // First Character (Reserved. 0x00)
 // Number Of Characters (Reserved. 0x00)
 
-unsigned char tft_minya24[] = 
+#include "sdkconfig.h"
+
+const unsigned char tft_minya24[] = 
 {
 0x00, 0x15, 0x00, 0x00,
 

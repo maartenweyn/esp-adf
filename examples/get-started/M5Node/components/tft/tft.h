@@ -1,14 +1,46 @@
 /*
+ * This file is part of the MicroPython ESP32 project, https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018 LoBo (https://github.com/loboris)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+/*
  * High level TFT functions
- * Author:  LoBo 04/2017, https://github/loboris
+ * Author:  LoBo 02/2018, https://github/loboris
  * 
  */
 
 #ifndef _TFT_H_
 #define _TFT_H_
 
+#include "sdkconfig.h"
+
 #include <stdlib.h>
 #include "tftspi.h"
+
+#define TFT_MODE_TFT    0
+#define TFT_MODE_EPD    1
+#define TFT_MODE_EVE    2
+
 
 typedef struct {
 	uint16_t        x1;
@@ -29,10 +61,24 @@ typedef struct {
 	color_t     color;
 } Font;
 
+typedef struct _tft_eve_obj_t {
+    // mp_obj_base_t base;
+    // uint32_t    addr;
+    // uint32_t    size;
+    // uint16_t    width;
+    // uint16_t    height;
+    // uint16_t    rowsize;
+    // uint8_t     type;
+    // uint8_t     byte_per_pixel;
+    // uint8_t     prev_tft_mode;
+    // uint8_t     loaded;
+} tft_eve_obj_t;
+
 
 //==========================================================================================
 // ==== Global variables ===================================================================
 //==========================================================================================
+
 extern uint8_t   orientation;		// current screen orientation
 extern uint16_t  font_rotate;   	// current font font_rotate angle (0~395)
 extern uint8_t   font_transparent;	// if not 0 draw fonts transparent
@@ -42,6 +88,7 @@ extern uint8_t   font_line_space;	// additional spacing between text lines; adde
 extern uint8_t   text_wrap;         // if not 0 wrap long text to the new line, else clip
 extern color_t   _fg;            	// current foreground color for fonts
 extern color_t   _bg;            	// current background for non transparent fonts
+extern uint8_t   font_now;
 extern dispWin_t dispWin;			// display clip window
 extern float	  _angleOffset;		// angle offset for arc, polygon and line by angle functions
 extern uint8_t	  image_debug;		// print debug messages during image decode if set to 1
@@ -50,9 +97,18 @@ extern Font cfont;					// Current font structure
 
 extern int	TFT_X;					// X position of the next character after TFT_print() function
 extern int	TFT_Y;					// Y position of the next character after TFT_print() function
+extern uint16_t image_width;
+extern uint16_t image_hight;
 
 extern uint32_t tp_calx;			// touch screen X calibration constant
 extern uint32_t tp_caly;			// touch screen Y calibration constant
+
+extern uint8_t tft_active_mode;     // used tft driver mode (TFT, EPD or EVE)
+
+#if CONFIG_MICROPY_USE_EVE
+extern tft_eve_obj_t *eve_tft_obj;
+#endif
+
 // =========================================================================================
 
 
@@ -101,6 +157,26 @@ extern const color_t TFT_ORANGE;
 extern const color_t TFT_GREENYELLOW;
 extern const color_t TFT_PINK;
 
+#define iTFT_BLACK       0
+#define iTFT_NAVY        128
+#define iTFT_DARKGREEN   32768
+#define iTFT_DARKCYAN    32896
+#define iTFT_MAROON      8388608
+#define iTFT_PURPLE      8388736
+#define iTFT_OLIVE       8421376
+#define iTFT_LIGHTGREY   12632256
+#define iTFT_DARKGREY    8421504
+#define iTFT_BLUE        255
+#define iTFT_GREEN       65280
+#define iTFT_CYAN        65535
+#define iTFT_RED         16515072
+#define iTFT_MAGENTA     16515327
+#define iTFT_YELLOW      16579584
+#define iTFT_WHITE       16579836
+#define iTFT_ORANGE      16557056
+#define iTFT_GREENYELLOW 11336748
+#define iTFT_PINK        16564426
+
 // === Color invert constants ===
 #define INVERT_ON		1
 #define INVERT_OFF		0
@@ -126,6 +202,12 @@ extern const color_t TFT_PINK;
 #define FONT_7SEG		9
 #define USER_FONT		10  // font will be read from file
 
+#define DEJAVU40_FONT   11
+#define DEJAVU56_FONT   12
+#define DEJAVU72_FONT   13
+
+#define IMAGE_TYPE_JPG	1
+#define IMAGE_TYPE_BMP	2
 
 
 // ===== PUBLIC FUNCTIONS =========================================================================
@@ -157,6 +239,7 @@ void TFT_drawPixel(int16_t x, int16_t y, color_t color, uint8_t sel);
 */
 //------------------------------------------
 color_t TFT_readPixel(int16_t x, int16_t y);
+
 
 /*
  * Draw vertical line at given x,y coordinates
@@ -581,6 +664,7 @@ int TFT_getStringWidth(char* str);
 /*
  * Fills the rectangle occupied by string with current background color
  */
+//------------------------------------------------
 void TFT_clearStringRect(int x, int y, char *str);
 
 /*
@@ -675,5 +759,9 @@ int compile_font_file(char *fontfile, uint8_t dbg);
  * Get all font's characters to buffer
  */
 void getFontCharacters(uint8_t *buf);
+
+
+void led_pwm_init();
+void led_setBrightness(int duty);
 
 #endif

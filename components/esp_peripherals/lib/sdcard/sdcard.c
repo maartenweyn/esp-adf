@@ -53,23 +53,71 @@ static void sdmmc_card_print_info(const sdmmc_card_t *card)
     ESP_LOGD(TAG, "SCR: sd_spec=%d, bus_width=%d\n", card->scr.sd_spec, card->scr.bus_width);
 }
 
+static void _setPins(int8_t miso, int8_t mosi, int8_t clk, int8_t cs, int8_t dat1, int8_t dat2)
+{
+    if (miso >= 0) { // miso/dat0/dO
+		gpio_pad_select_gpio(miso);
+		gpio_set_direction(miso, GPIO_MODE_INPUT_OUTPUT_OD);
+		gpio_set_pull_mode(miso, GPIO_PULLUP_ONLY);
+        gpio_set_level(miso, 1);
+    }
+    if (mosi >= 0) { // mosi/cmd/dI
+		gpio_pad_select_gpio(mosi);
+		gpio_set_direction(mosi, GPIO_MODE_INPUT_OUTPUT_OD);
+		gpio_set_pull_mode(mosi, GPIO_PULLUP_ONLY);
+        gpio_set_level(mosi, 1);
+    }
+    if (clk >= 0) { // clk/sck
+		gpio_pad_select_gpio(clk);
+		gpio_set_direction(clk, GPIO_MODE_INPUT_OUTPUT_OD);
+        gpio_set_pull_mode(clk, GPIO_PULLUP_ONLY);
+		gpio_set_level(clk, 1);
+    }
+    if (cs >= 0) { // cs/dat3
+        gpio_pad_select_gpio(cs);
+        gpio_set_direction(cs, GPIO_MODE_INPUT_OUTPUT);
+        gpio_set_pull_mode(cs, GPIO_PULLUP_ONLY);
+        gpio_set_level(cs, 1);
+    }
+    if (dat1 >= 0) { // dat1
+        gpio_pad_select_gpio(dat1);
+        gpio_set_direction(dat1, GPIO_MODE_INPUT_OUTPUT_OD);
+        gpio_set_pull_mode(dat1, GPIO_PULLUP_ONLY);
+        gpio_set_level(dat1, 1);
+    }
+    if (dat2 >= 0) { // dat2
+        gpio_pad_select_gpio(dat2);
+        gpio_set_direction(dat2, GPIO_MODE_INPUT_OUTPUT_OD);
+        gpio_set_pull_mode(dat2, GPIO_PULLUP_ONLY);
+        gpio_set_level(dat2, 1);
+    }
+}
+
 esp_err_t sdcard_mount(const char *base_path)
 {
-    sdmmc_host_t host = SDMMC_HOST_DEFAULT();
-    // To use 1-line SD mode, uncomment the following line:
-    host.flags = SDMMC_HOST_FLAG_1BIT;
-    host.max_freq_khz = SDMMC_FREQ_HIGHSPEED;
-    sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
-    slot_config.gpio_cd = g_gpio;
-    slot_config.width = 1;
+    ESP_LOGI(TAG, "Using SPI peripheral");
+    esp_err_t ret;
+    sdmmc_card_t *card;
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    sdspi_slot_config_t slot_config = SDSPI_SLOT_CONFIG_DEFAULT();
+
+    slot_config.gpio_miso = 19;
+    slot_config.gpio_mosi = 23;
+    slot_config.gpio_sck  = 18;
+    slot_config.gpio_cs   = 4;
+
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
-        .max_files = get_sdcard_open_file_num_max()
+        .max_files = 5,
+        .allocation_unit_size = 0
     };
 
-    sdmmc_card_t *card;
-    ESP_LOGI(TAG, "Trying to mount with base path=%s", base_path);
-    esp_err_t ret = esp_vfs_fat_sdmmc_mount(base_path, &host, &slot_config, &mount_config, &card);
+    host.slot = VSPI_HOST;
+    host.max_freq_khz = 40000;
+    slot_config.dma_channel = 2;
+    _setPins(slot_config.gpio_miso, slot_config.gpio_mosi, slot_config.gpio_sck, slot_config.gpio_cs, -1, -1);
+    ret = esp_vfs_fat_sdmmc_mount(base_path, &host, &slot_config, &mount_config, &card);
+
 
     switch (ret) {
         case ESP_OK:
@@ -107,10 +155,10 @@ esp_err_t sdcard_unmount(void)
 
 bool sdcard_is_exist()
 {
-    if (g_gpio >= 0) {
-        return (gpio_get_level(g_gpio) == 0x00);
-    }
-    return false;
+    // if (g_gpio >= 0) {
+    //     return (gpio_get_level(g_gpio) == 0x00);
+    // }
+    return true;
 }
 
 int IRAM_ATTR sdcard_read_detect_pin(void)
