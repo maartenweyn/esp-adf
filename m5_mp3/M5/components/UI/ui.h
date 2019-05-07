@@ -4,8 +4,8 @@
 extern  uint8_t master_jpg_start[] asm("_binary_master_jpg_start");
 extern  uint8_t master_jpg_end[]   asm("_binary_master_jpg_end");
 
-// extern  uint8_t master_bmp_start[] asm("_binary_master_bmp_start");
-// extern  uint8_t master_bmp_end[]   asm("_binary_master_bmp_end");
+extern  uint8_t master_bmp_start[] asm("_binary_master_bmp_start");
+extern  uint8_t master_bmp_end[]   asm("_binary_master_bmp_end");
 
 extern  uint8_t A1_jpg_start[] asm("_binary_A1_jpg_start");
 extern  uint8_t A1_jpg_end[]   asm("_binary_A1_jpg_end");
@@ -88,3 +88,4 @@ extern uint8_t UiReady;
 #define SPI_BUS TFT_HSPI_HOST
 void UI_Task_Create(void);
 void DisplayVolume(uint8_t vol);
+void lcdInit(void) ;

@@ -36,12 +36,12 @@ void app_main(void)
 {  
     /*Display temperature and humidity,bluetooth connection status
       mp3 play and pause,volume level*/
+    lcdInit();
     UI_Task_Create();
-
 
     bt_link_event_status();
 
-    //Keyscan task,Control music playback and adjust the volume
+    // //Keyscan task,Control music playback and adjust the volume
     btn_tast_create();
 
     TaskSelect();

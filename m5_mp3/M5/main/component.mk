@@ -6,7 +6,7 @@
 
 COMPONENT_EMBED_TXTFILES := /home/lin/esp/esp-adf/m5_mp3/M5/components/asm/adf_music.mp3
 COMPONENT_EMBED_TXTFILES += /home/lin/esp/esp-adf/m5_mp3/M5/components/asm/master.jpg
-# COMPONENT_EMBED_TXTFILES += /home/lin/esp/esp-adf/m5_mp3/M5/components/asm/master.bmp
+COMPONENT_EMBED_FILES += /home/lin/esp/esp-adf/m5_mp3/M5/components/asm/master.bmp
 
 COMPONENT_EMBED_TXTFILES += /home/lin/esp/esp-adf/m5_mp3/M5/components/asm/A1.jpg
 COMPONENT_EMBED_TXTFILES += /home/lin/esp/esp-adf/m5_mp3/M5/components/asm/A2.jpg

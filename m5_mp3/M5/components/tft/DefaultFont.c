@@ -38,6 +38,8 @@
 // Memory usage : 1158 bytes
 // # characters : 95
 
+#include "sdkconfig.h"
+
 const unsigned char tft_DefaultFont[] =
 {
 0x00, 0x0B, 0x86, 0x04,

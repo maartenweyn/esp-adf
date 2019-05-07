@@ -47,6 +47,8 @@
 #define PLAY 0X01
 #define PAUSE 0X02
 
+#define TAG "UI DISPLAY"
+
 uint8_t bt_status = UNLINK_BT;
 void Display_bt_status(void)
 {
@@ -134,43 +136,52 @@ void DisplayVolume(uint8_t vol)
 }
 
 
+display_config_t dconfig;
+extern exspi_device_handle_t *disp_spi;
+void lcdInit(void) {
+    disp_spi = (exspi_device_handle_t *)malloc(sizeof(exspi_device_handle_t));
+    dconfig.speed = 40000000;
+    dconfig.rdspeed = 40000000;
+    dconfig.type = DISP_TYPE_M5STACK;
+    dconfig.host = HSPI_HOST;
+    dconfig.mosi = 23;
+    dconfig.miso = 19;
+    dconfig.sck = 18;
+    dconfig.cs = 14;
+    dconfig.dc = 27;
+    dconfig.tcs = -1;
+    dconfig.rst = 33;
+    dconfig.bckl = 32;
+    dconfig.bckl_on = 1;
+    dconfig.color_bits = 24;
+    dconfig.gamma = 0;
+    dconfig.width = 320;
+    dconfig.height = 240;
+    dconfig.invrot = 3;
+    dconfig.bgr = 8;
+    dconfig.touch = TOUCH_TYPE_NONE;
+    esp_err_t ret = TFT_display_init(&dconfig);
+	if (ret != ESP_OK) {
+		ESP_LOGE(TAG, "TFT init fail");
+	}
+    spi_set_speed(disp_spi, dconfig.speed);
+
+	font_rotate = 0;
+	text_wrap = 1;
+	font_transparent = 0;
+	font_forceFixed = 0;
+	gray_scale = 0;
+    TFT_setRotation(1);
+    TFT_setGammaCurve(0);
+	TFT_resetclipwin();
+	TFT_setFont(DEJAVU24_FONT, NULL);
+    ESP_LOGI(TAG, "tft init finish");
+}
+
+
 
 void UIInit(void *agr){
-    esp_err_t ret;
-    TFT_PinsInit();     //Initialize TFT_LCD pins
-    spi_lobo_device_handle_t spi;
-
-    spi_lobo_bus_config_t buscfg={
-        .miso_io_num=PIN_NUM_MISO,				// set SPI MISO pin
-        .mosi_io_num=PIN_NUM_MOSI,				// set SPI MOSI pin
-        .sclk_io_num=PIN_NUM_CLK,				// set SPI CLK pin
-        .quadwp_io_num=-1,
-        .quadhd_io_num=-1,
-		.max_transfer_sz = 6*1024,
-    };
-    spi_lobo_device_interface_config_t devcfg={
-        .clock_speed_hz=8000000,                // Initial clock out at 8 MHz
-        .mode=0,                                // SPI mode 0
-        .spics_io_num=-1,                       // we will use external CS pin
-	    .spics_ext_io_num=PIN_NUM_CS,           // external CS pin
-		.flags=LB_SPI_DEVICE_HALFDUPLEX,        // ALWAYS SET  to HALF DUPLEX MODE!! for display spi
-    };
-
-	ret=spi_lobo_bus_add_device(SPI_BUS, &buscfg, &devcfg, &spi);
-    assert(ret==ESP_OK);
-	disp_spi = spi;
-
-    ret = spi_lobo_device_select(spi, 1);       //Test the SPI CS
-    assert(ret==ESP_OK);
-    ret = spi_lobo_device_deselect(spi);
-    assert(ret==ESP_OK);
-
-    TFT_display_init();     //LCD Register initialization
-    TFT_setRotation(1);
-    TFT_setFont(DEJAVU24_FONT, NULL);
-
-    TFT_jpg_image(0, 0, 0, NULL,  master_jpg_start,master_jpg_end - master_jpg_start);      //Display main frame
-    // TFT_bmp_image(0, 0, 0, NULL,  master_bmp_start,master_bmp_end - master_bmp_start);       //Display main frame
+    TFT_bmp_image(0, 0, 0, NULL,  master_bmp_start,master_bmp_end - master_bmp_start);       //Display main frame
     TFT_jpg_image(37, 214, 0, NULL,  A2_jpg_start,A2_jpg_end - A2_jpg_start);
     TFT_jpg_image(129, 214, 0, NULL, B2_jpg_start,B2_jpg_end - B2_jpg_start);
     TFT_jpg_image(220, 214, 0, NULL, C2_jpg_start,C2_jpg_end - C2_jpg_start);
@@ -188,7 +199,7 @@ void UIInit(void *agr){
         Display_bt_status();                //Displays bluetooth connection status
         key_status();                       //Display button status
         DisplayVolume(volume);              //Display volume
-        vTaskDelay(1/portTICK_RATE_MS);
+        vTaskDelay(1000/portTICK_RATE_MS);
     }
 }
 
