@@ -164,7 +164,7 @@ static void bt_play_mp3(void *arg){
 TaskHandle_t xBT_TaskHandle = NULL;
 
 void BT_player_task_create(void){
-    xTaskCreatePinnedToCore(bt_play_mp3,"bt_play_Task",3 * 1024, NULL,7, xBT_TaskHandle,tskNO_AFFINITY);
+    xTaskCreatePinnedToCore(bt_play_mp3,"bt_play_Task",3 * 1024, NULL,7, &xBT_TaskHandle,tskNO_AFFINITY);
 }
 
 

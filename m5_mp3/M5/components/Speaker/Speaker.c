@@ -232,11 +232,10 @@ static void speakReg(void *p){
                     ESP_LOGD(SPEAK_TAG, "Not supported keyword");
                     break;
             }
-            vTaskDelay(10/portTICK_RATE_MS);
     }
 }
 
-
+TaskHandle_t xSP_TaskHandle = NULL;
 void speaker_tast_create(void){
-    xTaskCreatePinnedToCore(speakReg,  "speakReg_task", 7 * 1024, NULL,5, NULL,0);
+    xTaskCreatePinnedToCore(speakReg,  "speakReg_task", 7 * 1024, NULL,5, &xSP_TaskHandle,0);
 }

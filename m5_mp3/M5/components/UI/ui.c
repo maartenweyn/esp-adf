@@ -168,7 +168,7 @@ void lcdInit(void) {
 
 	font_rotate = 0;
 	text_wrap = 1;
-	font_transparent = 0;
+	font_transparent = 1;
 	font_forceFixed = 0;
 	gray_scale = 0;
     TFT_setRotation(1);
@@ -194,6 +194,12 @@ void UIInit(void *agr){
     TFT_print(dataHum, 129,10);
     TFT_jpg_image(196, 10, 0, NULL, vol7_jpg_start,vol7_jpg_end - vol7_jpg_start);
     TFT_jpg_image(120, 85, 0, NULL, pause_jpg_start,pause_jpg_end - pause_jpg_start);
+
+    TFT_jpg_image(7, 7, 0, NULL,  tmp_jpg_start,tmp_jpg_end - tmp_jpg_start);
+    TFT_print(dataTmp, 40,10);
+    TFT_jpg_image(93, 7, 0, NULL,  hum_jpg_start,hum_jpg_end - hum_jpg_start);
+    TFT_print(dataHum, 129,10);
+
     while(1){
         Display_hum_tmp();                  //Display temperature and humidity
         Display_bt_status();                //Displays bluetooth connection status

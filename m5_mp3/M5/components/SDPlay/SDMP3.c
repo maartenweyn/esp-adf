@@ -39,8 +39,6 @@ static const char *mp3_file[] = {
     "/sdcard/test3.mp3",
     "/sdcard/test4.mp3",
     "/sdcard/test5.mp3",
-    "/sdcard/test6.mp3",
-    "/sdcard/test7.mp3",
 };
 // more files may be added and `MP3_FILE_COUNT` will reflect the actual count
 #define MP3_FILE_COUNT sizeof(mp3_file)/sizeof(char*)
@@ -215,8 +213,8 @@ void SD_Play(void)
 
 }
 
-
+TaskHandle_t xSD_TaskHandle = NULL;
 
 void SD_task_create(void){
-         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",   3 * 1024, NULL, 7, NULL,0);     
+         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    3 * 1024, NULL, 7, &xSD_TaskHandle,0);   
 }

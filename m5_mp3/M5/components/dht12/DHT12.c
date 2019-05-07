@@ -16,8 +16,8 @@
 
 #define TAG  "DHT12"
 float tmp=0.0, hum=0.0,Ttmp=0.0, Thum=0.0;
-char dataHum[20] = {0};
-char dataTmp[20] = {0};
+char dataHum[20] = "35";
+char dataTmp[20] = "35 ";
 
 uint8_t DisHumTum = UNDISPLAY_T_H;
 void dht12_task(void *arg){
