@@ -17,16 +17,18 @@ void app_main(void)
       mp3 play and pause,volume level*/
     UI_Task_Create();
 
+    bt_link_event_status();
+
     //Create bluetooth audio pipeline
-    BT_player_task_create();
+    // BT_player_task_create();
 
     //Keyscan task,Control music playback and adjust the volume
     btn_tast_create();
 
     //Temperature and humidity collection Task
-    dht12_task_create(); 
+    // dht12_task_create(); 
 
-    //SD_task_create();
+    SD_task_create();
     //speaker_tast_create();
     //UIGIF_Task_Create();
 }

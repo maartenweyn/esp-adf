@@ -85,10 +85,6 @@ Main driver's function is 'spi_lobo_transfer_data()'
 #include "spi_master_lobo.h"
 
 
-// extern uint8_t CSFlag;
-// #define SD_CS_FREE 0
-// #define UN_SD_CS_FREE 1
-
 static spi_lobo_host_t *spihost[3] = {NULL};
 
 static const char *SPI_TAG = "spi_lobo_master";
@@ -822,7 +818,6 @@ esp_err_t IRAM_ATTR spi_lobo_device_select(spi_lobo_device_handle_t handle, int 
     }
 
     handle->cfg.selected = 1;
-    // CSFlag=UN_SD_CS_FREE;
     return ESP_OK;
 }
 

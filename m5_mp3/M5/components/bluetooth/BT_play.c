@@ -39,7 +39,7 @@ extern EventBits_t uxBits = 0;
 uint8_t volume=63;
 
 EventGroupHandle_t xEventGroup = NULL;
-static void bt_link_event_status(void)
+void bt_link_event_status(void)
 {
     xEventGroup =xEventGroupCreate();
     if( xEventGroup == NULL ){
@@ -164,7 +164,6 @@ static void bt_play_mp3(void *arg){
 TaskHandle_t xBT_TaskHandle = NULL;
 
 void BT_player_task_create(void){
-    bt_link_event_status();
     xTaskCreatePinnedToCore(bt_play_mp3,"bt_play_Task",3 * 1024, NULL,7, xBT_TaskHandle,tskNO_AFFINITY);
 }
 

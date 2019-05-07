@@ -17,6 +17,7 @@ extern TaskHandle_t xBT_TaskHandle;
 
 void volume_increase(uint8_t *vol);
 void volume_down(uint8_t *vol);
+void bt_link_event_status(void);
 
 #define LINK_BT  1
 #define UNLINK_BT 0

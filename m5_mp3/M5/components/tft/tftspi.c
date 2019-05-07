@@ -557,26 +557,21 @@ int IRAM_ATTR touch_get_data(uint8_t type)
 //---------------------------------------------------------
 static void IRAM_ATTR stmpe610_write_reg(uint8_t reg, uint8_t val) {
 
-	// if(CSFlag==SD_CS_FREE){
 		spi_lobo_device_select(ts_spi, 0);
 		ts_spi->host->hw->data_buf[0] = (val << 8) | reg;
 		_spi_transfer_start(ts_spi, 16, 0);
 		spi_lobo_device_deselect(ts_spi);
-	// }
 }
 
 //-----------------------------------------------
 static uint8_t IRAM_ATTR stmpe610_read_byte(uint8_t reg) {
 	uint8_t res  = 0;
-	// if(CSFlag==SD_CS_FREE){
 		spi_lobo_device_select(ts_spi, 0);
 		ts_spi->host->hw->data_buf[0] = (reg << 8) | (reg | 0x80);
 		_spi_transfer_start(ts_spi, 16, 16);
 		res = ts_spi->host->hw->data_buf[0] >> 8;
 		spi_lobo_device_deselect(ts_spi);
 		return res;
-	// }
-	// return res;
 }
 
 //-----------------------------------------

@@ -218,5 +218,5 @@ void SD_Play(void)
 
 
 void SD_task_create(void){
-         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",   3 * 1024, NULL, 5, NULL,0);     
+         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",   3 * 1024, NULL, 7, NULL,0);     
 }
