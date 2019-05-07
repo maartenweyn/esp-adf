@@ -44,3 +44,5 @@ coverage_report/
 *.bin
 
 *.vscode
+
+m5_mp3/M5/build
