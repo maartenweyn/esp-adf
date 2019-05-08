@@ -34,10 +34,12 @@ typedef struct _machine_neopixel_obj_t {
 } neopixel_obj_t;
 
 extern neopixel_obj_t* nodeNeopixel;
+#define ON 0
+#define OFF 1
 
 neopixel_obj_t* usr_neopixel_init(int gpio_num, uint16_t num, uint16_t rmtchan);
 void ledSetAll(uint32_t color);
-
+void Neopixel_Task_Create(void);
 
 
 

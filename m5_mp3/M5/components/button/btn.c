@@ -33,6 +33,7 @@
 
 #define PLAY 0X01
 #define PAUSE 0X02 
+#define RUN   0X03 
 
 #define SD_NEXT 0X01
 
@@ -44,6 +45,15 @@ int8_t  sel_mode=0;
 uint8_t mode=0;
 
 
+void BtnIOInit(void){
+
+    gpio_config_t io_conf;
+    io_conf.pin_bit_mask = BTN;     // Pin37 Pin38 Pin39 initialization
+    io_conf.mode = GPIO_MODE_INPUT;
+    io_conf.pull_up_en = 1;
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    gpio_config(&io_conf);        
+}
 
 
 /*buttons deal with
@@ -56,12 +66,13 @@ uint8_t mode=0;
 *  Long  press :    rewind                             forward
 *
 */
+
 void BtKeyScan(void){
     if(mode==2){
          uxBits = xEventGroupWaitBits(xEventGroup,BIT_0,pdFALSE,pdTRUE,NULL );          //Bluetooth connection wait bit
 
         if( (uxBits & BIT_0)  ==  BIT_0){
-             bt_status = LINK_BT;
+            bt_status = LINK_BT;
 
             switch (KeyRead())              //key scan
             {
@@ -77,8 +88,7 @@ void BtKeyScan(void){
                 case KEY_A_EVENT_LONG:
                         periph_bluetooth_rewind(bt_periph);
                     break;
-
-               
+              
                 case KEY_B_EVENT_SHORT:
                         if(play_pause ==PAUSE){
                             periph_bluetooth_play(bt_periph);
@@ -90,18 +100,16 @@ void BtKeyScan(void){
                     break;
 
                 case KEY_B_EVENT_DOUBLE:
-                        // if(xBT_TaskHandle!=NULL){
-                        //     vTaskDelete(xBT_TaskHandle);
-                        //     xBT_TaskHandle = NULL;
-                        //     mode=0;
-                        //     printf("vTaskDelete BT\n");
-                        // }
+                
                     break;
 
                 case KEY_B_EVENT_LONG:
-                       
+                    //    printf("long B\n");
+                    //    periph_bluetooth_pause(bt_periph);
+                    //    audio_pipeline_pause(BT_pipeline);
+                    //    vTaskDelay(500);
+                    //     mode=0;
                     break;
-
 
                 case KEY_C_EVENT_SHORT:
                         volume_increase(&volume);
@@ -113,21 +121,44 @@ void BtKeyScan(void){
                     break;
 
                 case KEY_C_EVENT_LONG:
-                            periph_bluetooth_fast_forward(bt_periph);
+                        periph_bluetooth_fast_forward(bt_periph);
                     break;
 
                 default:
                     break;
             }
         }else{
+
+            switch (KeyRead())              //key scan
+            {
+                case KEY_A_EVENT_SHORT:
+                        volume_down(&volume);
+                    break;
+
+                case KEY_B_EVENT_DOUBLE:
+                
+                    break;
+
+                case KEY_B_EVENT_LONG:
+                       
+                    //    printf("long B\n");
+                    //    mode=0;
+                    break;
+
+
+                case KEY_C_EVENT_SHORT:
+                        volume_increase(&volume);
+                    break;
+
+                default:
+                    break;
+            }
                 vTaskDelay(1/ portTICK_RATE_MS);
                 bt_status = UNLINK_BT;
         }
     }
         vTaskDelay(1/ portTICK_RATE_MS);
 }
-
-
 
 void SDKeyScan(void){
   if(mode==1){
@@ -147,7 +178,15 @@ void SDKeyScan(void){
             break;
 
         case KEY_B_EVENT_SHORT:
-                if(play_pause ==PLAY){  
+
+               if(play_pause==RUN) {
+                volume=40;
+                volume_down(&volume);
+                get_file(NEXT);
+                audio_pipeline_run(SD_pipeline);
+                play_pause = PLAY;
+               }
+               else if(play_pause ==PLAY){  
                     audio_pipeline_pause(SD_pipeline);
                     play_pause = PAUSE;
                     printf("pause\n");
@@ -159,19 +198,13 @@ void SDKeyScan(void){
             break;
 
         case KEY_B_EVENT_LONG:
-               mode=0;
-               printf("long B\n");
-               audio_pipeline_resume(SD_pipeline);
-               audio_pipeline_pause(SD_pipeline);
+                // audio_pipeline_resume(SD_pipeline);
+                // audio_pipeline_terminate(SD_pipeline);
+                // mode=0;
             break;
 
         case KEY_B_EVENT_DOUBLE:
-            // SDPipeStop();
-            // if(xSD_TaskHandle!=NULL){
-            //     vTaskDelete(xSD_TaskHandle);
-            //     mode=0;
-            //     printf("vTaskDelete SD mode:%d\n",mode);
-            // }
+ 
             break;
 
         case KEY_C_EVENT_SHORT:
@@ -219,9 +252,7 @@ void SelectMode(void){
                 if(sel_mode==1){
                     xEventGroupSetBits(xEventGroup,BIT_1_SD);
                     mode=1;
-                    volume=30;
-                    volume_down(&volume);
-                    play_pause = PAUSE;
+                    play_pause = RUN;
                     printf("BIT_1_SD\n");
                     
                 }
@@ -256,46 +287,57 @@ void SelectMode(void){
 
 
 
-static void BtnTask(void *arg){
-
-    gpio_config_t io_conf;
-    io_conf.pin_bit_mask = BTN;     // Pin37 Pin38 Pin39 initialization
-    io_conf.mode = GPIO_MODE_INPUT;
-    io_conf.pull_up_en = 1;
-    io_conf.intr_type = GPIO_INTR_DISABLE;
-    gpio_config(&io_conf);
-   
-    while(1){
-    //    BtKeyScan();     //Bluetooth keyscan
-    //    SDKeyScan();     //SD Card key scan
-    //    SelectMode();
-       vTaskDelay(1/ portTICK_RATE_MS);
-    }
-                
-}
 
 
 
 void TaskSelect(void){
 
+ static uint8_t BTTaskSupend=0;
+ static uint8_t SDTaskSupend=0;
+ static uint8_t SPTaskSupend=0;
+
   uxBits = xEventGroupWaitBits(xEventGroup,BIT_1_SD|BIT_2_BT|BIT_3_SP,pdFALSE,pdTRUE,NULL );          
         if( (uxBits & BIT_1_SD)  ==  BIT_1_SD){
-            SD_task_create();
-            dht12_task_create();
+            if(SDTaskSupend==0){
+                SDTaskSupend=1;
+                SD_task_create();
+                dht12_task_create();
+            }else{
+                SD_task_create();
+                // vTaskResume(xSD_TaskHandle);
+                // printf("resume SD\n");
+            }
             xEventGroupClearBits(xEventGroup,BIT_1_SD);
         }else if((uxBits & BIT_2_BT)  ==  BIT_2_BT){
+            if(BTTaskSupend==0){
+                BTTaskSupend=1;
             BT_player_task_create();
             dht12_task_create();
+            }else
+            {
+                BT_player_task_create();
+                // vTaskResume(xBT_TaskHandle);
+                // audio_pipeline_resume(BT_pipeline);
+                printf("resume BT\n");
+            }
+            
             xEventGroupClearBits(xEventGroup,BIT_2_BT);
         }else if((uxBits & BIT_3_SP)  ==  BIT_3_SP)
         {
             speaker_tast_create();
-            dht12_init();
+            // dht12_init();
             dht12_task_create();
             xEventGroupClearBits(xEventGroup,BIT_3_SP);
         }
-}
 
-void btn_tast_create(void){
-    xTaskCreatePinnedToCore(BtnTask,  "BtnTask",3 * 1024, NULL,1, NULL,tskNO_AFFINITY);
+        //  if(sel_mode==1){
+        //   // printf("SD\n");
+        // }
+        // else if (sel_mode==2)
+        // {
+        //   // printf("BT\n");
+        // }else if(sel_mode==3)
+        // {
+        //   // printf("SP\n");
+        // }
 }

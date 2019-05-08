@@ -9,39 +9,29 @@
 #include "button.h"
 #include "SDMP3.h"
 #include "dht12.h"
-
-
+#include "neopixelApp.h"
 
 void app_main(void)
 {  
     /*Display temperature and humidity,bluetooth connection status
       mp3 play and pause,volume level*/
     lcdInit();
-    UI_Task_Create();
+    BtnIOInit();
+    InitCommon();
 
     bt_link_event_status();
+    UI_Task_Create();
+    Neopixel_Task_Create();
 
     // //Keyscan task,Control music playback and adjust the volume
-    btn_tast_create();
-
     while(1)
     {
-
         BtKeyScan();     //Bluetooth keyscan
         SDKeyScan();     //SD Card key scan
         SelectMode();
         TaskSelect();
 
-        if(sel_mode==1){
-          // printf("SD\n");
-        }
-        else if (sel_mode==2)
-        {
-          // printf("BT\n");
-        }else if(sel_mode==3)
-        {
-          // printf("SP\n");
-        }
+        vTaskDelay(1/portTICK_RATE_MS);
     }
 }
 

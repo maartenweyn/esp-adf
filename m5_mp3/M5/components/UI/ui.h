@@ -89,3 +89,7 @@ extern uint8_t UiReady;
 void UI_Task_Create(void);
 void DisplayVolume(uint8_t vol);
 void lcdInit(void) ;
+void DisplayVolume(uint8_t vol);
+void Display_hum_tmp(void);
+void key_status(void);
+void Display_bt_status(void);

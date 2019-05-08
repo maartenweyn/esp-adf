@@ -5,7 +5,7 @@
 #define BTN_C   37
 #define BTN  ((1ULL<<BTN_A) | (1ULL<<BTN_B) | (1ULL<<BTN_C))
 
-void btn_tast_create(void);
+void BtnIOInit(void);
 extern uint8_t  play_pause;
 extern uint8_t key_vaule;
 extern int8_t  sel_mode;

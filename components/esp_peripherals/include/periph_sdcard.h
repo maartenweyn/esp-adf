@@ -74,7 +74,7 @@ esp_periph_handle_t periph_sdcard_init(periph_sdcard_cfg_t* sdcard_config);
  * @return     SDCARD mounted state
  */
 bool periph_sdcard_is_mounted(esp_periph_handle_t periph);
-
+esp_err_t periph_sdcard_unmount(esp_periph_handle_t periph);
 #ifdef __cplusplus
 }
 #endif

@@ -30,7 +30,25 @@
 #include "board.h"
 #include "ui.h"
 #include "btn.h"
+#include "BT_play.h"
 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
+#include <sys/unistd.h>
+#include <errno.h>
+#include "esp_log.h"
+#include "esp_system.h"
+#include "esp_vfs.h"
+#include "esp_vfs_fat.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "ff.h"
+
+extern esp_err_t sdcard_unmount(void);
 static const char *TAG = "SDCARD_MP3_CONTROL_EXAMPLE";
 
 static const char *mp3_file[] = {
@@ -48,7 +66,13 @@ static const char *mp3_file[] = {
 #define NEXT    1
 
 audio_pipeline_handle_t SD_pipeline;
-audio_element_handle_t i2s_stream_writer, mp3_decoder;
+audio_element_handle_t  mp3_decoder;
+esp_periph_set_handle_t set;
+audio_element_handle_t rsp_handle;
+audio_event_iface_handle_t evt;
+esp_periph_handle_t sdcard_handle;
+TaskHandle_t xSD_TaskHandle = NULL;
+audio_element_handle_t i2s_stream_writer_sd;
 
 FILE *get_file(int next_file)
 {
@@ -77,6 +101,24 @@ FILE *get_file(int next_file)
     return file;
 }
 
+DIR* dir;
+char name[30]={0};
+FILE *get_mp3_file(void)
+{
+    static FILE *file=NULL;  
+    dir = opendir("/sdcard");
+    for(;;){
+        struct dirent* de = readdir(dir);
+        if (!de) {
+            break;
+        }
+        sprintf(name,"/sdcard/%s",de->d_name);
+        printf("%s\n",de->d_name);
+    }
+    closedir(dir);
+    return file;
+}
+
 /*
  * Callback function to feed audio data stream from sdcard to mp3 decoder element
  */
@@ -89,35 +131,70 @@ static int my_sdcard_read_cb(audio_element_handle_t el, char *buf, int len, Tick
     return read_len;
 }
 
-esp_periph_set_handle_t set;
-audio_element_handle_t rsp_handle;
-audio_event_iface_handle_t evt;
 
 void SDPipeStop(void){
 
-    audio_pipeline_terminate(SD_pipeline);
+    // audio_pipeline_terminate(SD_pipeline);
 
-    audio_pipeline_unregister(SD_pipeline, mp3_decoder);
-    audio_pipeline_unregister(SD_pipeline, i2s_stream_writer);
-    audio_pipeline_unregister(SD_pipeline, rsp_handle);
+    // audio_pipeline_unregister(SD_pipeline, mp3_decoder);
+    // audio_pipeline_unregister(SD_pipeline, i2s_stream_writer_sd);
+    // audio_pipeline_unregister(SD_pipeline, rsp_handle);
 
-    /* Terminate the pipeline before removing the listener */
-    audio_pipeline_remove_listener(SD_pipeline);
+    // /* Terminate the pipeline before removing the listener */
+    // audio_pipeline_remove_listener(SD_pipeline);
 
-    /* Stop all peripherals before removing the listener */
-    esp_periph_set_stop_all(set);
-    audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
+    // /* Stop all peripherals before removing the listener */
+    // esp_periph_set_stop_all(set);
+    // audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
 
-    /* Make sure audio_pipeline_remove_listener & audio_event_iface_remove_listener are called before destroying event_iface */
-    audio_event_iface_destroy(evt);
+    // /* Make sure audio_pipeline_remove_listener & audio_event_iface_remove_listener are called before destroying event_iface */
+    // audio_event_iface_destroy(evt);
 
-    /* Release all resources */
-    audio_pipeline_deinit(SD_pipeline);
-    audio_element_deinit(i2s_stream_writer);
-    audio_element_deinit(mp3_decoder);
-    audio_element_deinit(rsp_handle);
-    esp_periph_set_destroy(set);
+    // /* Release all resources */
+    // audio_pipeline_deinit(SD_pipeline);
+    // audio_element_deinit(i2s_stream_writer_sd);
+    // audio_element_deinit(mp3_decoder);
+    // audio_element_deinit(rsp_handle);
+    // esp_periph_set_destroy(set);
+
+    // vTaskSuspend(xSD_TaskHandle);
     vTaskDelete(NULL);
+    // ESP_LOGI(TAG, "[4.0] Create audio SD_pipeline for playback");
+    // audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
+    // SD_pipeline = audio_pipeline_init(&pipeline_cfg);
+    // mem_assert(SD_pipeline);
+
+    // ESP_LOGI(TAG, "[4.1] Create i2s stream to write data to codec chip");
+    // i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
+    // i2s_cfg.i2s_config.sample_rate = 48000;
+    // i2s_cfg.type = AUDIO_STREAM_WRITER;
+    // i2s_stream_writer_sd = i2s_stream_init(&i2s_cfg);
+
+    // ESP_LOGI(TAG, "[4.2] Create mp3 decoder to decode mp3 file");
+    // mp3_decoder_cfg_t mp3_cfg = DEFAULT_MP3_DECODER_CONFIG();
+    // mp3_decoder = mp3_decoder_init(&mp3_cfg);
+    // audio_element_set_read_cb(mp3_decoder, my_sdcard_read_cb, NULL);
+
+    // ESP_LOGI(TAG, "[4.3] Create resample filter");
+    // rsp_filter_cfg_t rsp_cfg = DEFAULT_RESAMPLE_FILTER_CONFIG();
+    // rsp_handle = rsp_filter_init(&rsp_cfg);
+
+    // ESP_LOGI(TAG, "[4.4] Register all elements to audio SD_pipeline");
+    // audio_pipeline_register(SD_pipeline, mp3_decoder, "mp3");
+    // audio_pipeline_register(SD_pipeline, i2s_stream_writer_sd, "i2s");
+    // audio_pipeline_register(SD_pipeline, rsp_handle, "filter");
+
+    // ESP_LOGI(TAG, "[4.5] Link it together [my_sdcard_read_cb]-->mp3_decoder-->i2s_stream-->[codec_chip]");
+    // audio_pipeline_link(SD_pipeline, (const char *[]) {"mp3", "filter", "i2s"}, 3);
+
+    // ESP_LOGI(TAG, "[5.0] Set up  event listener");
+    // audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
+    // evt = audio_event_iface_init(&evt_cfg);
+
+    // ESP_LOGI(TAG, "[5.1] Listen for all SD_pipeline events");
+    // audio_pipeline_set_listener(SD_pipeline, evt);
+
+    // audio_pipeline_run(SD_pipeline);
 }
 
 
@@ -125,47 +202,6 @@ void SD_Play(void *arg)
 {
     esp_log_level_set("*", ESP_LOG_WARN);
     esp_log_level_set(TAG, ESP_LOG_INFO);
-
-    ESP_LOGI(TAG, "[1.0] Initialize peripherals management");
-    esp_periph_config_t periph_cfg = DEFAULT_ESP_PHERIPH_SET_CONFIG();
-    set = esp_periph_set_init(&periph_cfg);
-
-    periph_sdcard_cfg_t sdcard_cfg = {
-        .root = "/sdcard",
-        .card_detect_pin = get_sdcard_intr_gpio(), //GPIO_NUM_34
-    };
-    
-    esp_periph_handle_t sdcard_handle = periph_sdcard_init(&sdcard_cfg);
-    ESP_LOGI(TAG, "[1.1] Start SD card peripheral");
-    esp_periph_start(set, sdcard_handle);
-
-    // Wait until sdcard is mounted
-    while (!periph_sdcard_is_mounted(sdcard_handle)) {
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-    }
-
-    ESP_LOGI(TAG, "[1.2] Initialize and start peripherals");
-
-#if (CONFIG_ESP_LYRAT_V4_3_BOARD || CONFIG_ESP_LYRAT_V4_2_BOARD)
-    periph_touch_cfg_t touch_cfg = {
-        .touch_mask = BIT(get_input_set_id()) | BIT(get_input_play_id()) | BIT(get_input_volup_id()) | BIT(get_input_voldown_id()),
-        .tap_threshold_percent = 70,
-    };
-    esp_periph_handle_t touch_periph = periph_touch_init(&touch_cfg);
-    esp_periph_start(set, touch_periph);
-
-#elif (CONFIG_ESP_LYRATD_MSC_V2_1_BOARD || CONFIG_ESP_LYRATD_MSC_V2_2_BOARD)
-    periph_adc_button_cfg_t adc_btn_cfg = {0};
-    adc_arr_t adc_btn_tag = ADC_DEFAULT_ARR();
-    adc_btn_cfg.arr = &adc_btn_tag;
-    adc_btn_cfg.arr_size = 1;
-    esp_periph_handle_t adc_btn_handle = periph_adc_button_init(&adc_btn_cfg);
-    esp_periph_start(set, adc_btn_handle);
-#endif
-
-    ESP_LOGI(TAG, "[ 2 ] Start codec chip");
-    audio_board_handle_t board_handle = audio_board_init();
-    audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_DECODE, AUDIO_HAL_CTRL_START);
 
     ESP_LOGI(TAG, "[4.0] Create audio SD_pipeline for playback");
     audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
@@ -176,24 +212,20 @@ void SD_Play(void *arg)
     i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
     i2s_cfg.i2s_config.sample_rate = 48000;
     i2s_cfg.type = AUDIO_STREAM_WRITER;
-    i2s_stream_writer = i2s_stream_init(&i2s_cfg);
+    i2s_stream_writer_sd = i2s_stream_init(&i2s_cfg);
 
     ESP_LOGI(TAG, "[4.2] Create mp3 decoder to decode mp3 file");
     mp3_decoder_cfg_t mp3_cfg = DEFAULT_MP3_DECODER_CONFIG();
     mp3_decoder = mp3_decoder_init(&mp3_cfg);
     audio_element_set_read_cb(mp3_decoder, my_sdcard_read_cb, NULL);
 
-    /* ZL38063 audio chip on board of ESP32-LyraTD-MSC does not support 44.1 kHz sampling frequency,
-       so resample filter has been added to convert audio data to other rates accepted by the chip.
-       You can resample the data to 16 kHz or 48 kHz.
-    */
     ESP_LOGI(TAG, "[4.3] Create resample filter");
     rsp_filter_cfg_t rsp_cfg = DEFAULT_RESAMPLE_FILTER_CONFIG();
     rsp_handle = rsp_filter_init(&rsp_cfg);
 
     ESP_LOGI(TAG, "[4.4] Register all elements to audio SD_pipeline");
     audio_pipeline_register(SD_pipeline, mp3_decoder, "mp3");
-    audio_pipeline_register(SD_pipeline, i2s_stream_writer, "i2s");
+    audio_pipeline_register(SD_pipeline, i2s_stream_writer_sd, "i2s");
     audio_pipeline_register(SD_pipeline, rsp_handle, "filter");
 
     ESP_LOGI(TAG, "[4.5] Link it together [my_sdcard_read_cb]-->mp3_decoder-->i2s_stream-->[codec_chip]");
@@ -206,19 +238,9 @@ void SD_Play(void *arg)
     ESP_LOGI(TAG, "[5.1] Listen for all SD_pipeline events");
     audio_pipeline_set_listener(SD_pipeline, evt);
 
-    audio_pipeline_run(SD_pipeline);
-    ESP_LOGI(TAG,"[ 6 ] Starting audio SD_pipeline\n");
-    vTaskDelay(200);
-    audio_pipeline_pause(SD_pipeline);
-
     while (1) {
+        
         audio_event_iface_msg_t msg;
-
-        printf("mode:%d\n",mode);
-        if(mode==0)
-        {
-             SDPipeStop();
-        }
 
         esp_err_t ret = audio_event_iface_listen(evt, &msg, portMAX_DELAY);
         if (ret != ESP_OK) {
@@ -233,14 +255,14 @@ void SD_Play(void *arg)
                 audio_element_getinfo(mp3_decoder, &music_info);
                 ESP_LOGI(TAG, "[ * ] Received music info from mp3 decoder, sample_rates=%d, bits=%d, ch=%d",
                          music_info.sample_rates, music_info.bits, music_info.channels);
-                audio_element_setinfo(i2s_stream_writer, &music_info);
+                audio_element_setinfo(i2s_stream_writer_sd, &music_info);
                 rsp_filter_set_src_info(rsp_handle, music_info.sample_rates, music_info.channels);
                 continue;
             }
             // Advance to the next song when previous finishes
-            if (msg.source == (void *) i2s_stream_writer
+            if (msg.source == (void *) i2s_stream_writer_sd
                 && msg.cmd == AEL_MSG_CMD_REPORT_STATUS) {
-                audio_element_state_t el_state = audio_element_get_state(i2s_stream_writer);
+                audio_element_state_t el_state = audio_element_get_state(i2s_stream_writer_sd);
                 if (el_state == AEL_STATE_FINISHED) {
                     ESP_LOGI(TAG, "[ * ] Finished, advancing to the next song");
                     audio_pipeline_stop(SD_pipeline);
@@ -256,12 +278,7 @@ void SD_Play(void *arg)
 
 }
 
-TaskHandle_t xSD_TaskHandle = NULL;
-
-
-
-
 
 void SD_task_create(void){
-         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    3 * 1024, NULL, 1, &xSD_TaskHandle,0);   
+         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    4 * 1024, NULL, 1, &xSD_TaskHandle,tskNO_AFFINITY);   
 }

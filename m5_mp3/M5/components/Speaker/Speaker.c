@@ -30,62 +30,12 @@
 #include "esp_peripherals.h"
 #include "bluetooth_service.h"
 
-// typedef struct _machine_neopixel_obj_t {
-//     rmt_channel_t channel;
-//     int gpio_num;
-//     pixel_settings_t px;
-// } neopixel_obj_t;
-
-// neopixel_obj_t* nodeNeopixel;
-
-// void ledSetAll(uint32_t color) {
-//     color = color << 8;
-//     for(uint8_t i = 0; i < 12; i++) {
-//         np_set_pixel_color(&nodeNeopixel->px, i, color);
-//     }
-//     np_show(&nodeNeopixel->px, nodeNeopixel->channel);
-// }
-
-// static neopixel_obj_t* usr_neopixel_init(int gpio_num, uint16_t num, uint16_t rmtchan) {
-//     neopixel_obj_t* neopixel_n = (neopixel_obj_t *)malloc(sizeof(neopixel_obj_t));
-
-//     neopixel_n->px.timings.mark.level0 = 1;
-// 	neopixel_n->px.timings.mark.level1 = 0;
-// 	neopixel_n->px.timings.space.level0 = 1;
-// 	neopixel_n->px.timings.space.level1 = 0;
-// 	neopixel_n->px.timings.reset.level0 = 0;
-// 	neopixel_n->px.timings.reset.level1 = 0;
-// 	neopixel_n->px.timings.mark.duration0 = 12,
-
-//     neopixel_n->px.nbits = 24;
-//     neopixel_n->px.timings.mark.duration1 = 14;
-//     neopixel_n->px.timings.space.duration0 = 7;
-//     neopixel_n->px.timings.space.duration1 = 16;
-//     neopixel_n->px.timings.reset.duration0 = 600;
-//     neopixel_n->px.timings.reset.duration1 = 600;
-
-//     neopixel_n->channel = rmtchan;
-//     neopixel_n->gpio_num = gpio_num;
-//     neopixel_n->px.pixel_count = num;
-//     neopixel_n->px.pixels = (uint8_t *)malloc((neopixel_n->px.nbits/8) * neopixel_n->px.pixel_count);
-//     neopixel_n->px.brightness = 50;
-//     sprintf(neopixel_n->px.color_order, "GRBW");
-
-//     if (neopixel_init(neopixel_n->gpio_num, rmtchan) != ESP_OK) {
-//         printf("neopixel init error\r\n");
-//         return ;
-//     } 
-
-//     printf("neopixel init ok...\r\n");
-
-//     np_clear(&neopixel_n->px);
-//     np_show(&neopixel_n->px, neopixel_n->channel);
-//     return neopixel_n;
-// }
-
-
 static const char *SPEAK_TAG = "Speak";
 static const char *EVENT_TAG = "asr_event";
+
+extern uint8_t LightTurn;
+#define ON 0
+#define OFF 1
 
 typedef enum {
     WAKE_UP = 1,
@@ -196,9 +146,11 @@ static void speakReg(void *p){
                     break;
                 case OPEN_THE_LIGHT:
                     ESP_LOGI(SPEAK_TAG, "Turn on the light");
+                    LightTurn = ON;
                     break;
                 case CLOSE_THE_LIGHT:
                     ESP_LOGI(SPEAK_TAG, "Turn off the light");
+                    LightTurn = OFF;
                     break;
                 case VOLUME_INCREASE:
                     ESP_LOGI(SPEAK_TAG, "volume increase");
@@ -237,5 +189,5 @@ static void speakReg(void *p){
 
 TaskHandle_t xSP_TaskHandle = NULL;
 void speaker_tast_create(void){
-    xTaskCreatePinnedToCore(speakReg,  "speakReg_task", 7 * 1024, NULL,1, &xSP_TaskHandle,tskNO_AFFINITY);
+    xTaskCreatePinnedToCore(speakReg,  "speakReg_task", 7 * 1024, NULL,2, &xSP_TaskHandle,tskNO_AFFINITY);
 }

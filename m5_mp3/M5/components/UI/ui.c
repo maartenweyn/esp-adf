@@ -205,15 +205,15 @@ void UIInit(void *agr){
         Display_bt_status();                //Displays bluetooth connection status
         key_status();                       //Display button status
         DisplayVolume(volume);              //Display volume
-        vTaskDelay(1000/portTICK_RATE_MS);
+
+        vTaskDelay(1/portTICK_RATE_MS);
     }
 }
 
 void UI_Task_Create(void) {
 
-    xTaskCreatePinnedToCore(UIInit,  "UITask", 3 * 1024, NULL,1, NULL, tskNO_AFFINITY);   
+    xTaskCreatePinnedToCore(UIInit,  "UITask", 3 * 1024, NULL,1, NULL,tskNO_AFFINITY );   
 }
-
 
 
 

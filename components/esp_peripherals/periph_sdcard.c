@@ -54,8 +54,8 @@ static const char* TAG = "PERIPH_SDCARD";
 
 
 static esp_err_t periph_sdcard_mount(esp_periph_handle_t periph);
-static esp_err_t periph_sdcard_unmount(esp_periph_handle_t periph);
-
+// static esp_err_t periph_sdcard_unmount(esp_periph_handle_t periph);
+esp_err_t periph_sdcard_unmount(esp_periph_handle_t periph);
 
 typedef struct {
     char *root;
