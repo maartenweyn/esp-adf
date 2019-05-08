@@ -42,9 +42,6 @@ void app_main(void)
         {
           // printf("SP\n");
         }
-
-       
-      
     }
 }
 

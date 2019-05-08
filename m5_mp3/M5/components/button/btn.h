@@ -9,6 +9,7 @@ void btn_tast_create(void);
 extern uint8_t  play_pause;
 extern uint8_t key_vaule;
 extern int8_t  sel_mode;
+extern uint8_t mode;
 
 void SelectMode(void);
 void SDKeyScan(void);

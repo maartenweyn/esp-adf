@@ -40,6 +40,6 @@ void dht12_task(void *arg){
 }
 
 void dht12_task_create(void){
-    xTaskCreatePinnedToCore(dht12_task,  "dht12_task",   2 * 1024, NULL, 5, NULL,tskNO_AFFINITY);      
+    xTaskCreatePinnedToCore(dht12_task,  "dht12_task",   2 * 1024, NULL, 1, NULL,tskNO_AFFINITY);      
 }
 

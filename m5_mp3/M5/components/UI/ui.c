@@ -211,7 +211,7 @@ void UIInit(void *agr){
 
 void UI_Task_Create(void) {
 
-    xTaskCreatePinnedToCore(UIInit,  "UITask", 3 * 1024, NULL,4, NULL, tskNO_AFFINITY);   
+    xTaskCreatePinnedToCore(UIInit,  "UITask", 3 * 1024, NULL,1, NULL, tskNO_AFFINITY);   
 }
 
 

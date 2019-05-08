@@ -92,13 +92,14 @@ void BtKeyScan(void){
                 case KEY_B_EVENT_DOUBLE:
                         // if(xBT_TaskHandle!=NULL){
                         //     vTaskDelete(xBT_TaskHandle);
+                        //     xBT_TaskHandle = NULL;
                         //     mode=0;
-                        //     printf("vTaskDelete BT mode:%d\n",mode);
+                        //     printf("vTaskDelete BT\n");
                         // }
                     break;
 
                 case KEY_B_EVENT_LONG:
-                        printf("B L\n");
+                       
                     break;
 
 
@@ -138,11 +139,10 @@ void SDKeyScan(void){
             break;
 
         case KEY_A_EVENT_LONG:
-
+       
             break;
 
         case KEY_A_EVENT_DOUBLE:     
-            
             
             break;
 
@@ -159,19 +159,17 @@ void SDKeyScan(void){
             break;
 
         case KEY_B_EVENT_LONG:
-                printf("[ * ] Starting audio SD_pipeline\n");
-                audio_pipeline_run(SD_pipeline);
-                volume=40;
-                volume_down(&volume);
-                play_pause = PLAY;
+               mode=0;
+               printf("long B\n");
+               audio_pipeline_resume(SD_pipeline);
+               audio_pipeline_pause(SD_pipeline);
             break;
 
         case KEY_B_EVENT_DOUBLE:
-
-            audio_pipeline_terminate(SD_pipeline);
+            // SDPipeStop();
             // if(xSD_TaskHandle!=NULL){
             //     vTaskDelete(xSD_TaskHandle);
-                mode=0;
+            //     mode=0;
             //     printf("vTaskDelete SD mode:%d\n",mode);
             // }
             break;
@@ -221,6 +219,9 @@ void SelectMode(void){
                 if(sel_mode==1){
                     xEventGroupSetBits(xEventGroup,BIT_1_SD);
                     mode=1;
+                    volume=30;
+                    volume_down(&volume);
+                    play_pause = PAUSE;
                     printf("BIT_1_SD\n");
                     
                 }
@@ -230,12 +231,10 @@ void SelectMode(void){
                     mode=2;
                     printf("BIT_2_BT\n");
                     
-                }else
+                }else if(sel_mode==3)
                 {
                     xEventGroupSetBits(xEventGroup,BIT_3_SP);
                     mode=3;
-                    printf("BIT_3_SP\n");
-                    TFT_print("SP",240,100);
                 }
                 break;
 
@@ -298,5 +297,5 @@ void TaskSelect(void){
 }
 
 void btn_tast_create(void){
-    xTaskCreatePinnedToCore(BtnTask,  "BtnTask",3 * 1024, NULL,6, NULL,tskNO_AFFINITY);
+    xTaskCreatePinnedToCore(BtnTask,  "BtnTask",3 * 1024, NULL,1, NULL,tskNO_AFFINITY);
 }

@@ -29,6 +29,7 @@
 #include "periph_adc_button.h"
 #include "board.h"
 #include "ui.h"
+#include "btn.h"
 
 static const char *TAG = "SDCARD_MP3_CONTROL_EXAMPLE";
 
@@ -88,14 +89,46 @@ static int my_sdcard_read_cb(audio_element_handle_t el, char *buf, int len, Tick
     return read_len;
 }
 
-void SD_Play(void)
+esp_periph_set_handle_t set;
+audio_element_handle_t rsp_handle;
+audio_event_iface_handle_t evt;
+
+void SDPipeStop(void){
+
+    audio_pipeline_terminate(SD_pipeline);
+
+    audio_pipeline_unregister(SD_pipeline, mp3_decoder);
+    audio_pipeline_unregister(SD_pipeline, i2s_stream_writer);
+    audio_pipeline_unregister(SD_pipeline, rsp_handle);
+
+    /* Terminate the pipeline before removing the listener */
+    audio_pipeline_remove_listener(SD_pipeline);
+
+    /* Stop all peripherals before removing the listener */
+    esp_periph_set_stop_all(set);
+    audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
+
+    /* Make sure audio_pipeline_remove_listener & audio_event_iface_remove_listener are called before destroying event_iface */
+    audio_event_iface_destroy(evt);
+
+    /* Release all resources */
+    audio_pipeline_deinit(SD_pipeline);
+    audio_element_deinit(i2s_stream_writer);
+    audio_element_deinit(mp3_decoder);
+    audio_element_deinit(rsp_handle);
+    esp_periph_set_destroy(set);
+    vTaskDelete(NULL);
+}
+
+
+void SD_Play(void *arg)
 {
     esp_log_level_set("*", ESP_LOG_WARN);
     esp_log_level_set(TAG, ESP_LOG_INFO);
 
     ESP_LOGI(TAG, "[1.0] Initialize peripherals management");
     esp_periph_config_t periph_cfg = DEFAULT_ESP_PHERIPH_SET_CONFIG();
-    esp_periph_set_handle_t set = esp_periph_set_init(&periph_cfg);
+    set = esp_periph_set_init(&periph_cfg);
 
     periph_sdcard_cfg_t sdcard_cfg = {
         .root = "/sdcard",
@@ -156,7 +189,7 @@ void SD_Play(void)
     */
     ESP_LOGI(TAG, "[4.3] Create resample filter");
     rsp_filter_cfg_t rsp_cfg = DEFAULT_RESAMPLE_FILTER_CONFIG();
-    audio_element_handle_t rsp_handle = rsp_filter_init(&rsp_cfg);
+    rsp_handle = rsp_filter_init(&rsp_cfg);
 
     ESP_LOGI(TAG, "[4.4] Register all elements to audio SD_pipeline");
     audio_pipeline_register(SD_pipeline, mp3_decoder, "mp3");
@@ -168,15 +201,25 @@ void SD_Play(void)
 
     ESP_LOGI(TAG, "[5.0] Set up  event listener");
     audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
-    audio_event_iface_handle_t evt = audio_event_iface_init(&evt_cfg);
+    evt = audio_event_iface_init(&evt_cfg);
 
     ESP_LOGI(TAG, "[5.1] Listen for all SD_pipeline events");
     audio_pipeline_set_listener(SD_pipeline, evt);
 
-    ESP_LOGW(TAG, "[ 6 ] Press the B long keys to control music player:");
+    audio_pipeline_run(SD_pipeline);
+    ESP_LOGI(TAG,"[ 6 ] Starting audio SD_pipeline\n");
+    vTaskDelay(200);
+    audio_pipeline_pause(SD_pipeline);
 
     while (1) {
         audio_event_iface_msg_t msg;
+
+        printf("mode:%d\n",mode);
+        if(mode==0)
+        {
+             SDPipeStop();
+        }
+
         esp_err_t ret = audio_event_iface_listen(evt, &msg, portMAX_DELAY);
         if (ret != ESP_OK) {
             ESP_LOGE(TAG, "[ * ] Event interface error : %d", ret);
@@ -215,6 +258,10 @@ void SD_Play(void)
 
 TaskHandle_t xSD_TaskHandle = NULL;
 
+
+
+
+
 void SD_task_create(void){
-         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    3 * 1024, NULL, 7, &xSD_TaskHandle,0);   
+         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    3 * 1024, NULL, 1, &xSD_TaskHandle,0);   
 }

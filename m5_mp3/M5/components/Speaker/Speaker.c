@@ -237,5 +237,5 @@ static void speakReg(void *p){
 
 TaskHandle_t xSP_TaskHandle = NULL;
 void speaker_tast_create(void){
-    xTaskCreatePinnedToCore(speakReg,  "speakReg_task", 7 * 1024, NULL,5, &xSP_TaskHandle,0);
+    xTaskCreatePinnedToCore(speakReg,  "speakReg_task", 7 * 1024, NULL,1, &xSP_TaskHandle,tskNO_AFFINITY);
 }
