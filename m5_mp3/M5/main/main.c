@@ -22,7 +22,6 @@ void app_main(void)
     BtnIOInit();
     InitCommon();
     CreactTime();
-  
 
     bt_link_event_status();
     UI_Task_Create();

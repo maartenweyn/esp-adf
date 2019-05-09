@@ -47,18 +47,20 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "ff.h"
+#include "tftspi.h"
+#include "tft.h"
 
 extern esp_err_t sdcard_unmount(void);
 static const char *TAG = "SDCARD_MP3_CONTROL_EXAMPLE";
 
 
 DIR* dir;
-char name[30]={0};
+char name[100]={0};
 char ** mp3_file =  NULL;
 
 uint8_t Mp3FileCount = 0; 
 #define MP3_COUNT_MAX  100
-
+extern char *pMp3;
 #define CURRENT 0
 #define NEXT    1
 
@@ -89,10 +91,31 @@ FILE *get_file(int next_file)
     }
     // return a handle to the current file
     if (file == NULL) {
+        pMp3 = strstr(mp3_file[file_index],"/sdcard/");
         file = fopen(mp3_file[file_index], "r");
+        
         if (!file) {
             ESP_LOGE(TAG, "Error opening file");
-            return NULL;
+
+            if (++file_index > Mp3FileCount - 1) {
+                file_index = 0;
+            }
+
+            file = fopen(mp3_file[file_index], "r");
+
+            if (!file) {
+                ESP_LOGE(TAG, "Error opening file");
+                if (++file_index > Mp3FileCount - 1) {
+                    file_index = 0;
+                }
+
+                file = fopen(mp3_file[file_index], "r");
+
+                if (!file) 
+                return NULL;
+            }
+
+            
         }
     }
     return file;
@@ -120,6 +143,9 @@ void scan_mp3_file(void)
         p = strstr(de->d_name,".MP3");
 
         if(p != NULL){
+
+
+
             sprintf(name,"/sdcard/%s",de->d_name);
                 mp3_file[i] = (char*)malloc(strlen(name)+1);
 
@@ -129,7 +155,7 @@ void scan_mp3_file(void)
                 }
 
                 strcpy(mp3_file[i],name);
-                memset(name,0,30);
+                memset(name,0,100);
 
                 p = NULL;
 
@@ -230,6 +256,23 @@ void SD_Play(void *arg)
     esp_log_level_set("*", ESP_LOG_WARN);
     esp_log_level_set(TAG, ESP_LOG_INFO);
 
+
+    periph_sdcard_cfg_t sdcard_cfg = {
+        .root = "/sdcard",
+        .card_detect_pin = get_sdcard_intr_gpio(), 
+    };
+    
+    sdcard_handle = periph_sdcard_init(&sdcard_cfg);
+    printf("[1.1] Start SD card peripheral");
+    esp_periph_start(set, sdcard_handle);
+
+    // Wait until sdcard is mounted
+    while (!periph_sdcard_is_mounted(sdcard_handle)) {
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+
+    scan_mp3_file();
+
     ESP_LOGI(TAG, "[4.0] Create audio SD_pipeline for playback");
     audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
     SD_pipeline = audio_pipeline_init(&pipeline_cfg);
@@ -307,6 +350,5 @@ void SD_Play(void *arg)
 
 
 void SD_task_create(void){
-         scan_mp3_file();
          xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    5 * 512, NULL, 2, &xSD_TaskHandle,tskNO_AFFINITY);   
 }

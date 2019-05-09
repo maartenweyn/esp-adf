@@ -80,13 +80,14 @@ void neooixel(void){
         ledSetAllo(num);
         vTaskDelay(4/portTICK_RATE_MS);
         }
-        vTaskDelay(500/portTICK_RATE_MS);
+        vTaskDelay(300/portTICK_RATE_MS);
         for(j=150;j>1;j--){
             vTaskDelay(4/portTICK_RATE_MS);
             nodeNeopixel->px.brightness=j;
             ledSetAllo(num);
             vTaskDelay(4/portTICK_RATE_MS);
         }
+         vTaskDelay(100/portTICK_RATE_MS);
     }
     i++;
 }

@@ -153,20 +153,6 @@ void InitCommon(void){
     esp_periph_config_t periph_cfg = DEFAULT_ESP_PHERIPH_SET_CONFIG();
     set = esp_periph_set_init(&periph_cfg);
 
-    periph_sdcard_cfg_t sdcard_cfg = {
-        .root = "/sdcard",
-        .card_detect_pin = get_sdcard_intr_gpio(), 
-    };
-    
-    sdcard_handle = periph_sdcard_init(&sdcard_cfg);
-    printf("[1.1] Start SD card peripheral");
-    esp_periph_start(set, sdcard_handle);
-
-    // Wait until sdcard is mounted
-    while (!periph_sdcard_is_mounted(sdcard_handle)) {
-        vTaskDelay(100 / portTICK_PERIOD_MS);
-    }
-
 } 
 
 static void bt_play_mp3(void *arg){

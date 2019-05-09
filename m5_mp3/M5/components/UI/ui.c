@@ -50,6 +50,8 @@
 #define TAG "UI DISPLAY"
 
 uint8_t bt_status = UNLINK_BT;
+extern uint32_t Time_BLight;
+char *pMp3=NULL;
 void Display_bt_status(void)
 {
     if(bt_status == UNLINK_BT)
@@ -68,11 +70,13 @@ void key_status(void)
         TFT_jpg_image(55, 101, 0, NULL,  prev1_jpg_start,prev1_jpg_end - prev1_jpg_start);
         TFT_jpg_image(37, 214, 0, NULL,  A1_jpg_start,A1_jpg_end - A1_jpg_start);
         vTaskDelay(1/portTICK_RATE_MS);
+        Time_BLight = 0;
     }
     
     while(!gpio_get_level(BTN_B)){
         TFT_jpg_image(129, 214, 0, NULL, B1_jpg_start,B1_jpg_end - B1_jpg_start);
         vTaskDelay(1/portTICK_RATE_MS);
+        Time_BLight = 0;
     }
 
     while(!gpio_get_level(BTN_C)){
@@ -80,6 +84,7 @@ void key_status(void)
         // TFT_bmp_image(219, 101, 0, NULL, next1_bmp_start,next1_bmp_end - next1_bmp_start);
         TFT_jpg_image(220, 214, 0, NULL, C1_jpg_start,C1_jpg_end - C1_jpg_start);
         vTaskDelay(1/portTICK_RATE_MS);
+        Time_BLight = 0;
     }
  
     TFT_jpg_image(37, 214,  0, NULL, A2_jpg_start,A2_jpg_end - A2_jpg_start);
@@ -104,6 +109,11 @@ void Display_hum_tmp(void)
         TFT_print(dataTmp, 40,10);
         TFT_jpg_image(93, 7, 0, NULL,  hum_jpg_start,hum_jpg_end - hum_jpg_start);
         TFT_print(dataHum, 129,10);
+
+        if(pMp3!=NULL){
+            TFT_print(pMp3+8,50,50);
+            pMp3=NULL;
+        }
     }
 }
 

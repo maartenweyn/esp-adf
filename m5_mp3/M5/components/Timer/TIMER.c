@@ -17,18 +17,20 @@
 uint32_t Time_BLight=0;
 static void vBacklightTimerCallback(void)
 {
-    static uint32_t BL;
-    if(Time_BLight==30)
+    static uint32_t BL,tmp=0;
+    if(Time_BLight==40)
     {
         led_pwm_init(); 
         for(BL=700;BL>20;){
             BL-=10;
             led_setBrightness(BL);
             vTaskDelay(10/ portTICK_PERIOD_MS);
+            tmp = 1;
         }
     }
 
-    if(Time_BLight==0){
+    if(Time_BLight==0&&tmp == 1){
+        tmp =0;
         led_pwm_init(); 
         for(BL=0;BL<700;){
             BL+=10;
@@ -41,7 +43,7 @@ static void vBacklightTimerCallback(void)
 
 static TimerHandle_t xTimers = NULL;
 void CreactTime(void){
-    xTimers = xTimerCreate( "BacklightTimer", ( 1000/ portTICK_PERIOD_MS), pdTRUE,0,vBacklightTimerCallback);
+    xTimers = xTimerCreate( "BacklightTimer", ( 500/ portTICK_PERIOD_MS), pdTRUE,0,vBacklightTimerCallback);
 
         if( xTimers == NULL )
           {
