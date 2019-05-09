@@ -167,7 +167,6 @@ void InitCommon(void){
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
-    get_mp3_file();
 } 
 
 static void bt_play_mp3(void *arg){

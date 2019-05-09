@@ -18,7 +18,8 @@ void app_main(void)
     lcdInit();
     BtnIOInit();
     InitCommon();
-
+    scan_mp3_file();
+    
     bt_link_event_status();
     UI_Task_Create();
     Neopixel_Task_Create();

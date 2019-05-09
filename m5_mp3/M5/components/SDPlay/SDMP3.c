@@ -51,23 +51,13 @@
 extern esp_err_t sdcard_unmount(void);
 static const char *TAG = "SDCARD_MP3_CONTROL_EXAMPLE";
 
-static const char *mp3_file[] = {
-    // "/sdcard/test.mp3",
-    // "/sdcard/test1.mp3",
-    // "/sdcard/test2.mp3",
-    // "/sdcard/test3.mp3",
-    // "/sdcard/test4.mp3",
-    // "/sdcard/test5.mp3",
 
-    "/sdcard/TEST.MP3",
-    "/sdcard/TEST1.MP3",
-    "/sdcard/TEST2.MP3",
-    "/sdcard/TEST3.MP3",
-    "/sdcard/TEST4.MP3",
-    "/sdcard/TEST5.MP3",
-};
-// more files may be added and `MP3_FILE_COUNT` will reflect the actual count
-#define MP3_FILE_COUNT sizeof(mp3_file)/sizeof(char*)
+DIR* dir;
+char name[30]={0};
+char ** mp3_file =  NULL;
+
+uint8_t Mp3FileCount = 0; 
+#define MP3_COUNT_MAX  100
 
 #define CURRENT 0
 #define NEXT    1
@@ -88,7 +78,7 @@ FILE *get_file(int next_file)
 
     if (next_file != CURRENT) {
         // advance to the next file
-        if (++file_index > MP3_FILE_COUNT - 1) {
+        if (++file_index > Mp3FileCount - 1) {
             file_index = 0;
         }
         if (file != NULL) {
@@ -108,11 +98,17 @@ FILE *get_file(int next_file)
     return file;
 }
 
-DIR* dir;
-char name[30]={0};
-FILE *get_mp3_file(void)
+void scan_mp3_file(void)
 {
-    static FILE *file=NULL;  
+
+    static uint8_t i =0 ; 
+    mp3_file = (char **)malloc(sizeof(char *) * MP3_COUNT_MAX);
+
+    if (NULL == mp3_file) {
+        ESP_LOGE(TAG, "Memory allocation failed!");
+        return;
+    }
+
     dir = opendir("/sdcard");
     for(;;){
         struct dirent* de = readdir(dir);       
@@ -120,17 +116,33 @@ FILE *get_mp3_file(void)
             break;
         }
 
-        printf("---:%s\n",de->d_name);
         int *p = NULL ;
-         p = strstr(de->d_name,".MP3");
+        p = strstr(de->d_name,".MP3");
+
         if(p != NULL){
             sprintf(name,"/sdcard/%s",de->d_name);
-            printf("%s\n",de->d_name);
-            p = NULL;
+                mp3_file[i] = (char*)malloc(strlen(name)+1);
+
+                if(NULL==mp3_file[i]){
+                    ESP_LOGE(TAG, " Memory allocation failed!");
+                    return;
+                }
+
+                strcpy(mp3_file[i],name);
+                memset(name,0,30);
+
+                p = NULL;
+
+                if(i>=MP3_COUNT_MAX){
+                    ESP_LOGE(TAG, "The song is full Memory allocation failed!");
+                    return;
+                }
+                Mp3FileCount++;
+                i++;
         }
     }
+
     closedir(dir);
-    return file;
 }
 
 /*
