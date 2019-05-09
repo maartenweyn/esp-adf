@@ -86,8 +86,7 @@ static void speakReg(void *p){
     int sample_rate = model->get_samp_rate(iface);
     int audio_chunksize = model->get_samp_chunksize(iface);
     ESP_LOGI(EVENT_TAG, "keywords_num = %d, threshold = %f, sample_rate = %d, chunksize = %d, sizeof_uint16 = %d", num, threshold, sample_rate, audio_chunksize, sizeof(int16_t));
-    // int16_t *buff = (int16_t *)malloc(audio_chunksize * sizeof(short));
-    int16_t buff[2048]={0};
+    int16_t *buff = (int16_t *)malloc(audio_chunksize * sizeof(short));
     if (NULL == buff) {
         ESP_LOGE(EVENT_TAG, "Memory allocation failed!");
         model->destroy(iface);
@@ -172,7 +171,7 @@ static void speakReg(void *p){
                     ESP_LOGI(SPEAK_TAG, "pause");
                     periph_bluetooth_pause(bt_periph);
                     break;
-                case MUTE:
+                case MUTE:  
                     ESP_LOGI(SPEAK_TAG, "mute");
                     volume = 1;
                     WM8978_SPKvol_Set(volume);
@@ -189,5 +188,5 @@ static void speakReg(void *p){
 
 TaskHandle_t xSP_TaskHandle = NULL;
 void speaker_tast_create(void){
-    xTaskCreatePinnedToCore(speakReg,  "speakReg_task", 7 * 1024, NULL,2, &xSP_TaskHandle,tskNO_AFFINITY);
+    xTaskCreatePinnedToCore(speakReg,  "speakReg_task", 6 * 1024, NULL,2, &xSP_TaskHandle,tskNO_AFFINITY);
 }

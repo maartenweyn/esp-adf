@@ -155,7 +155,7 @@ void InitCommon(void){
 
     periph_sdcard_cfg_t sdcard_cfg = {
         .root = "/sdcard",
-        .card_detect_pin = get_sdcard_intr_gpio(), //GPIO_NUM_34
+        .card_detect_pin = get_sdcard_intr_gpio(), 
     };
     
     sdcard_handle = periph_sdcard_init(&sdcard_cfg);
@@ -169,7 +169,6 @@ void InitCommon(void){
 
     get_mp3_file();
 } 
-
 
 static void bt_play_mp3(void *arg){
 
@@ -189,10 +188,6 @@ static void bt_play_mp3(void *arg){
         .mode = BLUETOOTH_A2DP_SINK,
     };
     bluetooth_service_start(&bt_cfg);
-
-    // ESP_LOGI(BT_TAG, "[ 2 ] Start codec chip");
-    // audio_board_handle_t board_handle = audio_board_init();
-    // audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_DECODE, AUDIO_HAL_CTRL_START);
 
     ESP_LOGI(BT_TAG, "[ 3 ] Create audio pipeline for playback");
     audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
@@ -288,7 +283,7 @@ static void bt_play_mp3(void *arg){
 
 
 void BT_player_task_create(void){
-    xTaskCreatePinnedToCore(bt_play_mp3,"bt_play_Task",3 * 1024, NULL,2, &xBT_TaskHandle,tskNO_AFFINITY);
+    xTaskCreatePinnedToCore(bt_play_mp3,"bt_play_Task",6 * 512, NULL,2, &xBT_TaskHandle,tskNO_AFFINITY);
 }
 
 void  volume_increase(uint8_t *vol){

@@ -52,12 +52,19 @@ extern esp_err_t sdcard_unmount(void);
 static const char *TAG = "SDCARD_MP3_CONTROL_EXAMPLE";
 
 static const char *mp3_file[] = {
-    "/sdcard/test.mp3",
-    "/sdcard/test1.mp3",
-    "/sdcard/test2.mp3",
-    "/sdcard/test3.mp3",
-    "/sdcard/test4.mp3",
-    "/sdcard/test5.mp3",
+    // "/sdcard/test.mp3",
+    // "/sdcard/test1.mp3",
+    // "/sdcard/test2.mp3",
+    // "/sdcard/test3.mp3",
+    // "/sdcard/test4.mp3",
+    // "/sdcard/test5.mp3",
+
+    "/sdcard/TEST.MP3",
+    "/sdcard/TEST1.MP3",
+    "/sdcard/TEST2.MP3",
+    "/sdcard/TEST3.MP3",
+    "/sdcard/TEST4.MP3",
+    "/sdcard/TEST5.MP3",
 };
 // more files may be added and `MP3_FILE_COUNT` will reflect the actual count
 #define MP3_FILE_COUNT sizeof(mp3_file)/sizeof(char*)
@@ -108,12 +115,19 @@ FILE *get_mp3_file(void)
     static FILE *file=NULL;  
     dir = opendir("/sdcard");
     for(;;){
-        struct dirent* de = readdir(dir);
+        struct dirent* de = readdir(dir);       
         if (!de) {
             break;
         }
-        sprintf(name,"/sdcard/%s",de->d_name);
-        printf("%s\n",de->d_name);
+
+        printf("---:%s\n",de->d_name);
+        int *p = NULL ;
+         p = strstr(de->d_name,".MP3");
+        if(p != NULL){
+            sprintf(name,"/sdcard/%s",de->d_name);
+            printf("%s\n",de->d_name);
+            p = NULL;
+        }
     }
     closedir(dir);
     return file;
@@ -280,5 +294,5 @@ void SD_Play(void *arg)
 
 
 void SD_task_create(void){
-         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    4 * 1024, NULL, 1, &xSD_TaskHandle,tskNO_AFFINITY);   
+         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    5 * 512, NULL, 2, &xSD_TaskHandle,tskNO_AFFINITY);   
 }

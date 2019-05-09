@@ -63,6 +63,7 @@ void ledSetAllo(uint32_t color) {
     color = color << 8;
     for(uint8_t i = 0; i < 12; i++) {
         np_set_pixel_color(&nodeNeopixel->px, i, color+i*50);
+        vTaskDelay(1/portTICK_RATE_MS);
     }
     np_show(&nodeNeopixel->px, nodeNeopixel->channel);
 }
@@ -73,16 +74,18 @@ void neooixel(void){
     
     if(i%10==0) {
         uint32_t num = rand()%12345678;
-        for(j=0;j<255;j++){
+        for(j=0;j<150;j++){
+        vTaskDelay(4/portTICK_RATE_MS);
         nodeNeopixel->px.brightness=j;
         ledSetAllo(num);
-        vTaskDelay(10/portTICK_RATE_MS);
+        vTaskDelay(4/portTICK_RATE_MS);
         }
         vTaskDelay(500/portTICK_RATE_MS);
-        for(j=255;j>1;j--){
+        for(j=150;j>1;j--){
+            vTaskDelay(4/portTICK_RATE_MS);
             nodeNeopixel->px.brightness=j;
             ledSetAllo(num);
-            vTaskDelay(10/portTICK_RATE_MS);
+            vTaskDelay(4/portTICK_RATE_MS);
         }
     }
     i++;
@@ -92,6 +95,7 @@ uint8_t LightTurn = ON;
 void NeooixelTask(void *arg)
 {
     nodeNeopixel = usr_neopixel_init(GPIO_NUM_15, 12, 1);
+
 	while(1){
         if(LightTurn == ON){
             neooixel();
@@ -106,6 +110,5 @@ void NeooixelTask(void *arg)
 
 void Neopixel_Task_Create(void) {
 
-    xTaskCreatePinnedToCore(NeooixelTask,  "NeooixelTask", 2 * 1024, NULL,1, NULL,tskNO_AFFINITY );   
+    xTaskCreatePinnedToCore(NeooixelTask,  "NeooixelTask", 2 * 512, NULL,1, NULL, 0);   
 }
-// tskNO_AFFINITY

@@ -195,7 +195,7 @@ void SDKeyScan(void){
                     play_pause = PLAY;
                      printf("play\n");
                 }
-            break;
+            break;  
 
         case KEY_B_EVENT_LONG:
                 // audio_pipeline_resume(SD_pipeline);
@@ -329,15 +329,5 @@ void TaskSelect(void){
             dht12_task_create();
             xEventGroupClearBits(xEventGroup,BIT_3_SP);
         }
-
-        //  if(sel_mode==1){
-        //   // printf("SD\n");
-        // }
-        // else if (sel_mode==2)
-        // {
-        //   // printf("BT\n");
-        // }else if(sel_mode==3)
-        // {
-        //   // printf("SP\n");
-        // }
+ 
 }

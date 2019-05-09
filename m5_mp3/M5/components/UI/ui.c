@@ -206,13 +206,13 @@ void UIInit(void *agr){
         key_status();                       //Display button status
         DisplayVolume(volume);              //Display volume
 
-        vTaskDelay(1/portTICK_RATE_MS);
+        vTaskDelay(200/portTICK_RATE_MS);
     }
 }
 
 void UI_Task_Create(void) {
 
-    xTaskCreatePinnedToCore(UIInit,  "UITask", 3 * 1024, NULL,1, NULL,tskNO_AFFINITY );   
+    xTaskCreatePinnedToCore(UIInit,  "UITask", 5 * 512, NULL,1, NULL, 0);   
 }
 
 
