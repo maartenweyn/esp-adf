@@ -104,7 +104,7 @@ void NeooixelTask(void *arg)
             nodeNeopixel->px.brightness=0;
             np_show(&nodeNeopixel->px, nodeNeopixel->channel);
         }
-        vTaskDelay(1/portTICK_RATE_MS);  
+        vTaskDelay(10/portTICK_RATE_MS);  
     }
 }
 

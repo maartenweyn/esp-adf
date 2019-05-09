@@ -142,6 +142,7 @@ void scan_mp3_file(void)
         }
     }
 
+    printf("MP3 file count :%d \n",Mp3FileCount);
     closedir(dir);
 }
 
@@ -306,5 +307,6 @@ void SD_Play(void *arg)
 
 
 void SD_task_create(void){
+         scan_mp3_file();
          xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    5 * 512, NULL, 2, &xSD_TaskHandle,tskNO_AFFINITY);   
 }

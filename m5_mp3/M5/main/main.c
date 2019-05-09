@@ -10,6 +10,9 @@
 #include "SDMP3.h"
 #include "dht12.h"
 #include "neopixelApp.h"
+#include "tftspi.h"
+#include "TIMER.h"
+
 
 void app_main(void)
 {  
@@ -18,8 +21,9 @@ void app_main(void)
     lcdInit();
     BtnIOInit();
     InitCommon();
-    scan_mp3_file();
-    
+    CreactTime();
+  
+
     bt_link_event_status();
     UI_Task_Create();
     Neopixel_Task_Create();

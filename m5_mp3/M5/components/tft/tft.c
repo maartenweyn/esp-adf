@@ -3165,6 +3165,7 @@ void led_pwm_init() {
 	};
 	ledc_channel_config(&ledc_channel);
 }
+
  void led_setBrightness(int duty) {
 	ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_7, duty);
 	ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_7);

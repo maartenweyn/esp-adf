@@ -206,7 +206,7 @@ void UIInit(void *agr){
         key_status();                       //Display button status
         DisplayVolume(volume);              //Display volume
 
-        vTaskDelay(200/portTICK_RATE_MS);
+        vTaskDelay(300/portTICK_RATE_MS);
     }
 }
 

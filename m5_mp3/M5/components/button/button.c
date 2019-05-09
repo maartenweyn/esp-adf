@@ -18,8 +18,12 @@
 #include "esp_peripherals.h"
 #include "bluetooth_service.h"
 #include "button.h"
+#include "tftspi.h"
+#include "tft.h"
 
 #define KEY_THRESHOLD  500
+
+extern uint32_t Time_BLight;
 
 uint16_t KeyRead(void)
 {
@@ -48,7 +52,8 @@ uint16_t KeyRead(void)
                 }
             }
         }
-                
+
+        Time_BLight = 0;     
     }
 
 
@@ -76,6 +81,8 @@ uint16_t KeyRead(void)
                 }
             }
         }
+
+        Time_BLight = 0;
     }
 
 
@@ -104,7 +111,9 @@ uint16_t KeyRead(void)
                 }
             }
         }
+        Time_BLight = 0;
     }
+
 
     return K;
 }

@@ -170,7 +170,7 @@ void SDKeyScan(void){
             break;
 
         case KEY_A_EVENT_LONG:
-       
+                
             break;
 
         case KEY_A_EVENT_DOUBLE:     
@@ -204,7 +204,7 @@ void SDKeyScan(void){
             break;
 
         case KEY_B_EVENT_DOUBLE:
- 
+                
             break;
 
         case KEY_C_EVENT_SHORT:
