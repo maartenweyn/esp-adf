@@ -20,12 +20,15 @@
 #include "button.h"
 #include "tftspi.h"
 #include "tft.h"
+#include "TIMER.h"
 
 #define KEY_THRES_HOLD  500
 #define KEY_THRES_DOUBLE  250
 
 #define BL_ON 0
+#define BL_OFF 40
 extern uint32_t Time_BLight;
+extern uint8_t NextTmp;
 
 uint16_t KeyRead(void)
 {
@@ -55,8 +58,16 @@ uint16_t KeyRead(void)
             }
         }
 
-        Time_BLight = BL_ON;  
+        if(OFF_Flag == 1){
+            OFF_Flag = 0;
+            Time_BLight = BL_ON;
+            K = KEY_EVENT_NULL; 
+        } 
         if(Stmp==4){ Stmp=3;}
+
+         if(WFlag==1){
+            K = KEY_B_EVENT_DOUBLE;
+         }
          
     }
 
@@ -97,8 +108,16 @@ uint16_t KeyRead(void)
             }
         }
 
-        Time_BLight = BL_ON;
+        if(OFF_Flag == 1){
+            OFF_Flag = 0;
+            Time_BLight = BL_ON;
+             K = KEY_EVENT_NULL; 
+        }
         if(Stmp==4){ Stmp=3;}
+
+        if(WFlag==1){
+            K = KEY_B_EVENT_DOUBLE;
+         }
     }
 
 
@@ -123,12 +142,27 @@ uint16_t KeyRead(void)
             if(!gpio_get_level(BTN_C)){
                 vTaskDelay(10 / portTICK_RATE_MS);
                 if(!gpio_get_level(BTN_C)){
-                    K = KEY_C_EVENT_DOUBLE;  
+                    K = KEY_C_EVENT_DOUBLE; 
+                    if(NextTmp==1){
+                        K = KEY_EVENT_NULL;
+                    } 
                 }
             }
         }
-        Time_BLight = BL_ON;
+
+       if(OFF_Flag == 1){
+            OFF_Flag = 0;
+            Time_BLight = BL_ON;
+             K = KEY_EVENT_NULL; 
+        }
+        
         if(Stmp==4){ Stmp=3;}
+
+        if(WFlag==1){
+            K = KEY_B_EVENT_DOUBLE;
+         }
+
+         
     }
 
 

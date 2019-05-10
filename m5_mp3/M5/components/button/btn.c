@@ -45,6 +45,7 @@ FILE *get_file(int next_file);
 
 int8_t  sel_mode=1;
 uint8_t KeyMode = M_SEL;
+uint8_t NextTmp=0;
 
 extern uint8_t LightTurn;
 #define ON 0
@@ -131,6 +132,7 @@ void BtKeyScan(void){
                 case KEY_B_EVENT_DOUBLE:
                     if(WFlag==0){
                     WFlag=1;
+                    Wtmp = 0;
                     }else{
                         WFlag=0;
                         DisB=0;
@@ -172,6 +174,7 @@ void BtKeyScan(void){
                 case KEY_B_EVENT_DOUBLE:
                 if(WFlag==0){
                 WFlag=1;
+                Wtmp = 0;
                 }else{
                     WFlag=0;
                     DisB=0;
@@ -199,6 +202,7 @@ void BtKeyScan(void){
     }
 }
 
+
 void SDKeyScan(void){
   if(KeyMode == M_SD){
     switch (KeyRead())
@@ -219,16 +223,18 @@ void SDKeyScan(void){
         case KEY_B_EVENT_SHORT:
 
                if(play_pause==RUN) {
-                volume=40;
+                volume=50;
                 volume_down(&volume);
                 get_file(NEXT);
                 audio_pipeline_run(SD_pipeline);
                 play_pause = PLAY;
                }
                else if(play_pause ==PLAY){  
+                    NextTmp = 1;
                     audio_pipeline_pause(SD_pipeline);
                     play_pause = PAUSE;
                     printf("pause\n");
+                    NextTmp = 0;
                 }else{
                     audio_pipeline_resume(SD_pipeline);
                     play_pause = PLAY;
@@ -243,6 +249,7 @@ void SDKeyScan(void){
         case KEY_B_EVENT_DOUBLE:
             if(WFlag==0){
                 WFlag=1;
+                Wtmp = 0;
             }else{
                 WFlag=0;
                 DisB=0;
@@ -264,10 +271,13 @@ void SDKeyScan(void){
             break;
 
         case KEY_C_EVENT_DOUBLE:
+        
+                audio_pipeline_resume(SD_pipeline);
                 audio_pipeline_terminate(SD_pipeline);
                 get_file(NEXT);
                 printf( "next song\n");
                 audio_pipeline_run(SD_pipeline);
+                play_pause = PAUSE;
                 play_pause = PLAY;
             break;
 
@@ -299,6 +309,7 @@ void SPKeyScan(void){
         case KEY_B_EVENT_DOUBLE:
             if(WFlag==0){
                 WFlag=1;
+                Wtmp = 0;
             }else{
                 WFlag=0;
                 DisB=0;

@@ -62,23 +62,26 @@ void ledSetAll(uint32_t color) {
 void ledSetAllo(uint32_t color) {
     color = color << 8;
     for(uint8_t i = 0; i < 12; i++) {
-        np_set_pixel_color(&nodeNeopixel->px, i, color+i*50);
+        np_set_pixel_color(&nodeNeopixel->px, i, color);
         vTaskDelay(1/portTICK_RATE_MS);
     }
     np_show(&nodeNeopixel->px, nodeNeopixel->channel);
 }
 
-
+uint8_t LightTurn = ON;
 void neooixel(void){
     static uint8_t i=0,j=0;
     
     if(i%10==0) {
         uint32_t num = rand()%12345678;
         for(j=0;j<150;j++){
-        vTaskDelay(4/portTICK_RATE_MS);
-        nodeNeopixel->px.brightness=j;
-        ledSetAllo(num);
-        vTaskDelay(4/portTICK_RATE_MS);
+            vTaskDelay(4/portTICK_RATE_MS);
+            nodeNeopixel->px.brightness=j;
+            ledSetAllo(num);
+            vTaskDelay(4/portTICK_RATE_MS);
+            if(LightTurn != ON){
+                    break;
+            }
         }
         vTaskDelay(300/portTICK_RATE_MS);
         for(j=150;j>1;j--){
@@ -86,13 +89,15 @@ void neooixel(void){
             nodeNeopixel->px.brightness=j;
             ledSetAllo(num);
             vTaskDelay(4/portTICK_RATE_MS);
+            if(LightTurn != ON){
+                break;
+            }
         }
          vTaskDelay(100/portTICK_RATE_MS);
     }
     i++;
 }
 
-uint8_t LightTurn = ON;
 void NeooixelTask(void *arg)
 {
     nodeNeopixel = usr_neopixel_init(GPIO_NUM_15, 12, 1);

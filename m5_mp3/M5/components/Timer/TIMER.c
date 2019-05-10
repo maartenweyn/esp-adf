@@ -17,12 +17,13 @@
 #define BL_ON 0
 #define BL_OFF 40
 uint32_t Time_BLight=0;
-
+uint8_t OFF_Flag = 0;
 static void vBacklightTimerCallback(void *arg)
 {
     static uint32_t BL,tmp=0;
     if(Time_BLight == BL_OFF)
     {
+        OFF_Flag =1;
         led_pwm_init(); 
         for(BL=700;BL>20;){
             BL-=10;
@@ -30,9 +31,10 @@ static void vBacklightTimerCallback(void *arg)
             vTaskDelay(10/ portTICK_PERIOD_MS);
             tmp = 1;
         }
+
     }
 
-    if(Time_BLight == BL_ON&&tmp == 1){
+    if(Time_BLight == BL_ON && tmp == 1){
         tmp =0;
         led_pwm_init(); 
         for(BL=BL_ON;BL<700;){
@@ -41,6 +43,7 @@ static void vBacklightTimerCallback(void *arg)
             vTaskDelay(10/ portTICK_PERIOD_MS);
         }
     }
+
     Time_BLight++;
 }
 

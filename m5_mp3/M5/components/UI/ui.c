@@ -38,6 +38,7 @@
 #include "esp_log.h"
 #include "esp_spiffs.h"
 #include "neopixelApp.h"
+#include "TIMER.h"
 
 #define KEY_THRESHOLD  500
 #define PREV 0X01
@@ -49,9 +50,9 @@
 
 #define TAG "UI DISPLAY"
 
-#define XSD 50
+#define XSD 33
 #define XBT 127
-#define XSP 205
+#define XSP 222
 
 
 uint8_t bt_status = UNLINK;
@@ -66,6 +67,7 @@ uint8_t WFlag=0;
 uint8_t DiisWFlag=0;
 uint8_t DisWF=0;
 uint8_t DisB=0;
+uint8_t Wtmp = 0;
 char *pMp3=NULL;
 
 void key_status(void)
@@ -266,18 +268,30 @@ void lcdInit(void) {
 }
 
 
+
 void gobackW(void)
 {
         if(WFlag==1){
+            if(KeyMode==1){
+                if(Wtmp==0){
+                    Wtmp = 1;
+                    TFT_jpg_image(0, 0, 0, NULL,  SDW_jpg_start,SDW_jpg_end -  SDW_jpg_start);
+                }
+            }
 
-            if(KeyMode==1)
-             TFT_jpg_image(0, 0, 0, NULL,  SDW_jpg_start,SDW_jpg_end -  SDW_jpg_start);
+            if(KeyMode==2){
+                if(Wtmp==0){
+                    Wtmp = 1;
+                    TFT_jpg_image(0, 0, 0, NULL,  BTW_jpg_start,BTW_jpg_end -  BTW_jpg_start);
+                }
+             }
 
-             if(KeyMode==2)
-             TFT_jpg_image(0, 0, 0, NULL,  BTW_jpg_start,BTW_jpg_end -  BTW_jpg_start);
-
-             if(KeyMode==3)
-             TFT_jpg_image(0, 0, 0, NULL,  SPW_jpg_start,SPW_jpg_end -  SPW_jpg_start);
+             if(KeyMode==3){
+                 if(Wtmp==0){
+                    Wtmp = 1;
+                    TFT_jpg_image(0, 0, 0, NULL,  SPW_jpg_start,SPW_jpg_end -  SPW_jpg_start);
+                 }
+             }
         }
 }
 
@@ -329,19 +343,6 @@ void UIInit(void *agr){
         
 
         gobackW();
-
-        // if(WFlag==1){
-        //     DiisWFlag = 0;
-        //     if(DisWF==0){
-        //         DisWF =1;
-        //         TFT_jpg_image(0, 0, 0, NULL,    master1_jpg_start,master1_jpg_end - master1_jpg_start);
-        //         TFT_jpg_image(7, 7, 0, NULL,  tmp_jpg_start,tmp_jpg_end - tmp_jpg_start);
-        //         TFT_print("35", 40,10);
-        //         TFT_jpg_image(93, 7, 0, NULL,  hum_jpg_start,hum_jpg_end - hum_jpg_start);
-        //         TFT_print("35", 129,10);
-        //     }
-        // }
-
             if(WFlag==0){
                 Disback();
                 DisplaySelMode();
@@ -351,8 +352,8 @@ void UIInit(void *agr){
                 LinkStatus();
             }
 
-        printf("sel_mode:%d--Stmp:%d--KeyMode:%d--DisB:%d--WFlag:%d-- Disonce:%d---DiisWFlag:%d ---DisWF:%d\n"
-        ,sel_mode,Stmp,KeyMode,DisB,WFlag,Disonce,DiisWFlag,DisWF);
+        // printf("sel_mode:%d--Stmp:%d--KeyMode:%d--DisB:%d--WFlag:%d--Wtmp:%d--OFF_Flag:%d -- Disonce:%d---DiisWFlag:%d ---DisWF:%d\n"
+        // ,sel_mode,Stmp,KeyMode,DisB,WFlag,Wtmp,OFF_Flag,Disonce,DiisWFlag,DisWF);
 
         vTaskDelay(200/portTICK_RATE_MS);
     }

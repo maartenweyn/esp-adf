@@ -335,23 +335,27 @@ void SD_Play(void *arg)
             // Advance to the next song when previous finishes
             if (msg.source == (void *) i2s_stream_writer_sd
                 && msg.cmd == AEL_MSG_CMD_REPORT_STATUS) {
+
                 audio_element_state_t el_state = audio_element_get_state(i2s_stream_writer_sd);
                 if (el_state == AEL_STATE_FINISHED) {
                     ESP_LOGI(TAG, "[ * ] Finished, advancing to the next song");
-                    audio_pipeline_stop(SD_pipeline);
-                    audio_pipeline_wait_for_stop(SD_pipeline);
+
+                    // audio_pipeline_stop(SD_pipeline);
+                    // audio_pipeline_wait_for_stop(SD_pipeline);
+
+                    audio_pipeline_terminate(SD_pipeline);
                     get_file(NEXT);
                     audio_pipeline_run(SD_pipeline);
                 }
+
                 continue;
             }
         }
-        vTaskDelay(1/ portTICK_RATE_MS);
     }
 
 }
 
 
 void SD_task_create(void){
-         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    5 * 512, NULL, 2, &xSD_TaskHandle,tskNO_AFFINITY);   
+         xTaskCreatePinnedToCore(SD_Play,  "SD_Play",    5 * 512, NULL, 3, &xSD_TaskHandle,tskNO_AFFINITY);   
 }

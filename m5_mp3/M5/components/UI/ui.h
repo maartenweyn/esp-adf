@@ -170,6 +170,7 @@ extern uint8_t Distmp;
 extern uint8_t Disloop;
 extern uint8_t Disonce;
 extern uint8_t WFlag;
+extern uint8_t Wtmp;
 extern uint8_t DisB;
 
 #define LINK  1
