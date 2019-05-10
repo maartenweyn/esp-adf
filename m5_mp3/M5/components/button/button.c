@@ -21,8 +21,10 @@
 #include "tftspi.h"
 #include "tft.h"
 
-#define KEY_THRESHOLD  500
+#define KEY_THRES_HOLD  500
+#define KEY_THRES_DOUBLE  250
 
+#define BL_ON 0
 extern uint32_t Time_BLight;
 
 uint16_t KeyRead(void)
@@ -37,13 +39,13 @@ uint16_t KeyRead(void)
         uint32_t count = xTaskGetTickCount();
         while(!gpio_get_level(BTN_A)){
             vTaskDelay(1 / portTICK_RATE_MS);
-            if(xTaskGetTickCount() - count >= KEY_THRESHOLD){
+            if(xTaskGetTickCount() - count >= KEY_THRES_HOLD){
                 K = KEY_A_EVENT_LONG;
             }
         }
 
         uint32_t count_d = xTaskGetTickCount();
-        while((xTaskGetTickCount() - count_d)<200){
+        while((xTaskGetTickCount() - count_d) < KEY_THRES_DOUBLE){
             vTaskDelay(1/portTICK_RATE_MS);
             if(!gpio_get_level(BTN_A)){
             vTaskDelay(10 / portTICK_RATE_MS);
@@ -53,7 +55,9 @@ uint16_t KeyRead(void)
             }
         }
 
-        Time_BLight = 0;     
+        Time_BLight = BL_ON;  
+        if(Stmp==4){ Stmp=3;}
+         
     }
 
 
@@ -66,13 +70,13 @@ uint16_t KeyRead(void)
         uint32_t count = xTaskGetTickCount();
         while(!gpio_get_level(BTN_B)){
             vTaskDelay(1 / portTICK_RATE_MS);
-            if(xTaskGetTickCount() - count >= KEY_THRESHOLD){
+            if(xTaskGetTickCount() - count >= KEY_THRES_HOLD){
                 K = KEY_B_EVENT_LONG;
             }
         }
 
         uint32_t count_d = xTaskGetTickCount();
-        while((xTaskGetTickCount() - count_d)<200){
+        while((xTaskGetTickCount() - count_d) < KEY_THRES_DOUBLE){
             vTaskDelay(1 / portTICK_RATE_MS);
             if(!gpio_get_level(BTN_B)){
             vTaskDelay(10 / portTICK_RATE_MS);
@@ -82,7 +86,19 @@ uint16_t KeyRead(void)
             }
         }
 
-        Time_BLight = 0;
+        uint32_t count_dd = xTaskGetTickCount();
+        while((xTaskGetTickCount() - count_dd) < KEY_THRES_DOUBLE){
+            vTaskDelay(1 / portTICK_RATE_MS);
+            if(!gpio_get_level(BTN_B)){
+            vTaskDelay(10 / portTICK_RATE_MS);
+                if(!gpio_get_level(BTN_B)){
+                    K = KEY_B_EVENT_THREE;  
+                }
+            }
+        }
+
+        Time_BLight = BL_ON;
+        if(Stmp==4){ Stmp=3;}
     }
 
 
@@ -96,13 +112,13 @@ uint16_t KeyRead(void)
         uint32_t count = xTaskGetTickCount();
         while(!gpio_get_level(BTN_C)){
             vTaskDelay(1 / portTICK_RATE_MS);
-            if(xTaskGetTickCount() - count >= KEY_THRESHOLD){
+            if(xTaskGetTickCount() - count >= KEY_THRES_HOLD){
                 K = KEY_C_EVENT_LONG;
             }
         }
 
         uint32_t count_d = xTaskGetTickCount();
-        while((xTaskGetTickCount() - count_d)<200){
+        while((xTaskGetTickCount() - count_d) < KEY_THRES_DOUBLE){
             vTaskDelay(1 / portTICK_RATE_MS);
             if(!gpio_get_level(BTN_C)){
                 vTaskDelay(10 / portTICK_RATE_MS);
@@ -111,7 +127,8 @@ uint16_t KeyRead(void)
                 }
             }
         }
-        Time_BLight = 0;
+        Time_BLight = BL_ON;
+        if(Stmp==4){ Stmp=3;}
     }
 
 

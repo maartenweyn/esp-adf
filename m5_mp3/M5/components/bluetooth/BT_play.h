@@ -23,5 +23,4 @@ void volume_down(uint8_t *vol);
 void bt_link_event_status(void);
 void InitCommon(void);
 
-#define LINK_BT  1
-#define UNLINK_BT 0
+

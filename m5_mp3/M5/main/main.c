@@ -30,12 +30,17 @@ void app_main(void)
     // //Keyscan task,Control music playback and adjust the volume
     while(1)
     {
-        BtKeyScan();     //Bluetooth keyscan
-        SDKeyScan();     //SD Card key scan
+        //Bluetooth key scan
+        BtKeyScan(); 
+        //SD Card key scan
+        SDKeyScan();    
+        //select SD palyer bluetooth palyer or speaker mode
         SelectMode();
+        //
+        SPKeyScan();
         TaskSelect();
 
-        vTaskDelay(1/portTICK_RATE_MS);
+        vTaskDelay(10/portTICK_RATE_MS);
     }
 }
 

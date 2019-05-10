@@ -15,4 +15,6 @@
 #define KEY_C_EVENT_LONG                     0x0008
 #define KEY_C_EVENT_DOUBLE                   0x0009
 
+#define KEY_B_EVENT_THREE                   0x0010
+
 uint16_t KeyRead(void);

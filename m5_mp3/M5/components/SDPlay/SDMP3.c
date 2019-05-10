@@ -59,7 +59,7 @@ char name[100]={0};
 char ** mp3_file =  NULL;
 
 uint8_t Mp3FileCount = 0; 
-#define MP3_COUNT_MAX  100
+#define MP3_COUNT_MAX  250
 extern char *pMp3;
 #define CURRENT 0
 #define NEXT    1
@@ -139,7 +139,7 @@ void scan_mp3_file(void)
             break;
         }
 
-        int *p = NULL ;
+        char *p = NULL ;
         p = strstr(de->d_name,".MP3");
 
         if(p != NULL){
@@ -268,8 +268,11 @@ void SD_Play(void *arg)
 
     // Wait until sdcard is mounted
     while (!periph_sdcard_is_mounted(sdcard_handle)) {
+        sd_status = UNLINK;
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
+
+    sd_status = LINK;
 
     scan_mp3_file();
 

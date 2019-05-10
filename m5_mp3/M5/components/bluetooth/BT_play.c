@@ -29,17 +29,24 @@
 #include "bluetooth_service.h"
 #include "wm8978.h"
 #include "btn.h"
-#include "DHT12.h"
 #include "BT_play.h"
 #include "periph_sdcard.h"
 #include "SDMP3.h"
+#include <time.h>
+#include <sys/time.h>
+#include <sys/unistd.h>
+#include <errno.h>
+#include "esp_vfs.h"
+#include "esp_vfs_fat.h"
+#include "ff.h"
 
 static const char *BT_TAG = "BT_PLAY";  
 TaskHandle_t xBT_TaskHandle = NULL;
 audio_pipeline_handle_t BT_pipeline;
 esp_periph_handle_t bt_periph;
-extern EventBits_t uxBits = 0;
+EventBits_t uxBits;
 uint8_t volume=40;
+extern uint32_t Time_BLight;
 
 EventGroupHandle_t xEventGroup = NULL;
 void bt_link_event_status(void)
@@ -56,93 +63,7 @@ void bt_link_event_status(void)
 audio_element_handle_t bt_stream_reader, i2s_stream_writer;
 audio_event_iface_handle_t evt;
 esp_periph_set_handle_t set ;
-
 audio_element_handle_t i2s_stream_writer_bt;
-void BTExit(void){
-    // ESP_LOGI(BT_TAG, "[ 8 ] Stop audio_pipeline");
-    // audio_pipeline_terminate(BT_pipeline);
-
-    // audio_pipeline_unregister(BT_pipeline, bt_stream_reader);
-    // audio_pipeline_unregister(BT_pipeline, i2s_stream_writer);
-
-    // audio_pipeline_remove_listener(BT_pipeline);
-
-    // esp_periph_set_stop_all(set);
-    // audio_event_iface_remove_listener(esp_periph_set_get_event_iface(set), evt);
-
-    // audio_event_iface_destroy(evt);
-
-    // audio_pipeline_deinit(BT_pipeline);
-    // audio_element_deinit(bt_stream_reader);
-    // audio_element_deinit(i2s_stream_writer);
-    // esp_periph_set_destroy(set);
-    // bluetooth_service_destroy();
-
-    // periph_bluetooth_pause(bt_periph);
-    // audio_pipeline_pause(BT_pipeline);
-
-    // vTaskSuspend(xBT_TaskHandle);
-    vTaskDelete(NULL);
-
-    // ESP_LOGI(BT_TAG, "[ 3 ] Create audio pipeline for playback");
-    // audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
-    // BT_pipeline = audio_pipeline_init(&pipeline_cfg);
-
-    // ESP_LOGI(BT_TAG, "[3.1] Create i2s stream to write data to codec chip");
-    // i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
-    // i2s_cfg.type = AUDIO_STREAM_WRITER;
-    // i2s_stream_writer_bt = i2s_stream_init(&i2s_cfg);
-
-    // ESP_LOGI(BT_TAG, "[3.2] Get Bluetooth stream");
-    // bt_stream_reader = bluetooth_service_create_stream();
-
-    // ESP_LOGI(BT_TAG, "[3.2] Register all elements to audio pipeline");
-    // audio_pipeline_register(BT_pipeline, bt_stream_reader, "bt");
-    // audio_pipeline_register(BT_pipeline, i2s_stream_writer_bt, "i2s");
-
-    // ESP_LOGI(BT_TAG, "[3.3] Link it together [Bluetooth]-->bt_stream_reader-->i2s_stream_writer-->[codec_chip]");
-    // audio_pipeline_link(BT_pipeline, (const char *[]) {"bt", "i2s"}, 2);
-
-    // ESP_LOGI(BT_TAG, "[ 4 ] Initialize peripherals");
-    // esp_periph_config_t periph_cfg = DEFAULT_ESP_PHERIPH_SET_CONFIG();
-    // set = esp_periph_set_init(&periph_cfg);
-
-    // ESP_LOGI(BT_TAG, "[4.2] Create Bluetooth peripheral");
-    // bt_periph = bluetooth_service_create_periph();
-
-    // ESP_LOGI(BT_TAG, "[4.2] Start all peripherals");
-    // esp_periph_start(set, bt_periph);
-
-    // ESP_LOGI(BT_TAG, "[ 5 ] Set up  event listener");
-    // audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
-    // evt = audio_event_iface_init(&evt_cfg);
-
-    // ESP_LOGI(BT_TAG, "[5.1] Listening event from all elements of pipeline");
-    // audio_pipeline_set_listener(BT_pipeline, evt);
-
-    // ESP_LOGI(BT_TAG, "[5.2] Listening event from peripherals");
-    // audio_event_iface_set_listener(esp_periph_set_get_event_iface(set), evt);
-
-    // ESP_LOGI(BT_TAG, "[ 6 ] Start audio_pipeline");
-    // audio_pipeline_run(BT_pipeline);
-    // ESP_LOGI(BT_TAG, "[ 7 ] Listen for all pipeline events");
-}
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <sys/time.h>
-#include <sys/unistd.h>
-#include <errno.h>
-#include "esp_log.h"
-#include "esp_system.h"
-#include "esp_vfs.h"
-#include "esp_vfs_fat.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "ff.h"
 
 void InitCommon(void){
 
@@ -217,12 +138,6 @@ static void bt_play_mp3(void *arg){
     audio_pipeline_run(BT_pipeline);
     ESP_LOGI(BT_TAG, "[ 7 ] Listen for all pipeline events");
     while(1){
-            
-            // printf("mode:%d\n",mode);
-            // if(mode==0){
-            //     BTExit();
-            // }
-
             audio_event_iface_msg_t msg;
             esp_err_t ret = audio_event_iface_listen(evt, &msg, portMAX_DELAY);
             if (ret != ESP_OK) {
@@ -238,6 +153,7 @@ static void bt_play_mp3(void *arg){
             if (msg.source_type == AUDIO_ELEMENT_TYPE_ELEMENT && msg.source == (void *) bt_stream_reader
                 && msg.cmd == AEL_MSG_CMD_REPORT_MUSIC_INFO) {
                 xEventGroupSetBits(xEventGroup,BIT_0);
+                Time_BLight=0;
                 audio_element_info_t music_info = {0};
                 audio_element_getinfo(bt_stream_reader, &music_info);
 
@@ -253,6 +169,7 @@ static void bt_play_mp3(void *arg){
                 && msg.source == (void *)bt_periph) {
                 if (msg.cmd == PERIPH_BLUETOOTH_DISCONNECTED) {
                     xEventGroupClearBits(xEventGroup,BIT_0);
+                    Time_BLight=0;
                     ESP_LOGW(BT_TAG, "[ * ] Bluetooth disconnected");
                 }
             }

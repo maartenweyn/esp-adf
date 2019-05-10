@@ -14,11 +14,14 @@
 
 #define KEY_THRESHOLD  500
 
+#define BL_ON 0
+#define BL_OFF 40
 uint32_t Time_BLight=0;
-static void vBacklightTimerCallback(void)
+
+static void vBacklightTimerCallback(void *arg)
 {
     static uint32_t BL,tmp=0;
-    if(Time_BLight==40)
+    if(Time_BLight == BL_OFF)
     {
         led_pwm_init(); 
         for(BL=700;BL>20;){
@@ -29,10 +32,10 @@ static void vBacklightTimerCallback(void)
         }
     }
 
-    if(Time_BLight==0&&tmp == 1){
+    if(Time_BLight == BL_ON&&tmp == 1){
         tmp =0;
         led_pwm_init(); 
-        for(BL=0;BL<700;){
+        for(BL=BL_ON;BL<700;){
             BL+=10;
             led_setBrightness(BL);
             vTaskDelay(10/ portTICK_PERIOD_MS);
