@@ -17,6 +17,7 @@ extern uint8_t  play_pause;
 extern uint8_t key_vaule;
 extern int8_t  sel_mode;
 extern uint8_t mode;
+extern uint8_t NextTmp;
 
 void SelectMode(void);
 void SDKeyScan(void);
