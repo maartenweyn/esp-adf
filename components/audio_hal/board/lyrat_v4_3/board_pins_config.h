@@ -30,12 +30,12 @@
 // #define SD_PIN_NUM_CLK  14
 // #define SD_PIN_NUM_CS   13
 
-#define LEDS_PIN                  22  
+#define LEDS_PIN                  12 // 22  
 #define LEDS_TYPE                 8 //LED_SK6812_V1
 #define LEDS_NR                   5 
 #define LEDS_INC                  1
 
-#define UWB_UART_RX  12
+#define UWB_UART_RX  22// 12
 #define UWB_UART_TX  16
 
 
