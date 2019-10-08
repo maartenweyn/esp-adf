@@ -26,10 +26,12 @@ static const char *WM_TAG = "WM8978_DRIVER";
 
 static const i2c_config_t wm_i2c_cfg = {
     .mode = I2C_MODE_MASTER,
-    .sda_io_num = GPIO_NUM_21,
-    .scl_io_num = GPIO_NUM_22,
-    .sda_pullup_en = GPIO_PULLUP_ENABLE,
-    .scl_pullup_en = GPIO_PULLUP_ENABLE,
+    .sda_io_num = BOARD_I2C_SDA_PIN,
+    .scl_io_num = BOARD_I2C_SCL_PIN,
+    //.sda_pullup_en = GPIO_PULLUP_ENABLE,
+    //.scl_pullup_en = GPIO_PULLUP_ENABLE,
+    .sda_pullup_en = GPIO_PULLDOWN_DISABLE,
+    .scl_pullup_en = GPIO_PULLDOWN_DISABLE,
     .master.clk_speed = 100000
 };
 
@@ -41,12 +43,11 @@ audio_hal_func_t AUDIO_CODEC_DEFAULT_HANDLE = {
     .audio_codec_set_volume = wm8978_set_voice_volume,
     .audio_codec_get_volume = wm8978_get_voice_volume,
 };
-
 static int i2c_init()
 {
     int res;
-    res = i2c_param_config(I2C_NUM_1, &wm_i2c_cfg);
-    res |= i2c_driver_install(I2C_NUM_1, wm_i2c_cfg.mode, 0, 0, 0);
+    res = i2c_param_config(BOARD_I2C_NUM, &wm_i2c_cfg);
+    res |= i2c_driver_install(BOARD_I2C_NUM, wm_i2c_cfg.mode, 0, 0, 0);
     WM_ASSERT(res, "i2c_init error", -1);
     return res;
 }
@@ -79,30 +80,30 @@ static void wm8979_interface()
 	wm8978_write_reg(WM8978_CLOCKING,WM8978_REGVAL_TAL[WM8978_CLOCKING]);
 	WM8978_REGVAL_TAL[WM8978_CLOCKING]&=~bit8;//mclk is the clk source
 }
-static void wm8979_pll(uint32_t k,uint8_t n)
+// static void wm8979_pll(uint32_t k,uint8_t n)
 
-{
-	WM8978_REGVAL_TAL[WM8978_POWER_MANAGEMENT_1]|=bit5;//enable pll
-	wm8978_write_reg(WM8978_POWER_MANAGEMENT_1,WM8978_REGVAL_TAL[WM8978_POWER_MANAGEMENT_1]);
-	WM8978_REGVAL_TAL[WM8978_PLL_N]|=bit4;//mclk/2 =20m
-	WM8978_REGVAL_TAL[WM8978_PLL_N]&=0x1f0;
-	WM8978_REGVAL_TAL[WM8978_PLL_N]|=n;//7
-	wm8978_write_reg(WM8978_PLL_N,WM8978_REGVAL_TAL[WM8978_PLL_N]);
-	//k=EE009F
-	WM8978_REGVAL_TAL[WM8978_PLL_K1]=(k>>18);
-	wm8978_write_reg(WM8978_PLL_K1,WM8978_REGVAL_TAL[WM8978_PLL_K1]);
-	WM8978_REGVAL_TAL[WM8978_PLL_K2]=(k>>9);
-	wm8978_write_reg(WM8978_PLL_K2,WM8978_REGVAL_TAL[WM8978_PLL_K2]);
-	WM8978_REGVAL_TAL[WM8978_PLL_K3]=k;
-	wm8978_write_reg(WM8978_PLL_K3,WM8978_REGVAL_TAL[WM8978_PLL_K3]);
-}
-static void wm8979_loopback()
-{
+// {
+// 	WM8978_REGVAL_TAL[WM8978_POWER_MANAGEMENT_1]|=bit5;//enable pll
+// 	wm8978_write_reg(WM8978_POWER_MANAGEMENT_1,WM8978_REGVAL_TAL[WM8978_POWER_MANAGEMENT_1]);
+// 	WM8978_REGVAL_TAL[WM8978_PLL_N]|=bit4;//mclk/2 =20m
+// 	WM8978_REGVAL_TAL[WM8978_PLL_N]&=0x1f0;
+// 	WM8978_REGVAL_TAL[WM8978_PLL_N]|=n;//7
+// 	wm8978_write_reg(WM8978_PLL_N,WM8978_REGVAL_TAL[WM8978_PLL_N]);
+// 	//k=EE009F
+// 	WM8978_REGVAL_TAL[WM8978_PLL_K1]=(k>>18);
+// 	wm8978_write_reg(WM8978_PLL_K1,WM8978_REGVAL_TAL[WM8978_PLL_K1]);
+// 	WM8978_REGVAL_TAL[WM8978_PLL_K2]=(k>>9);
+// 	wm8978_write_reg(WM8978_PLL_K2,WM8978_REGVAL_TAL[WM8978_PLL_K2]);
+// 	WM8978_REGVAL_TAL[WM8978_PLL_K3]=k;
+// 	wm8978_write_reg(WM8978_PLL_K3,WM8978_REGVAL_TAL[WM8978_PLL_K3]);
+// }
+// static void wm8979_loopback()
+// {
 
-	WM8978_REGVAL_TAL[WM8978_COMPANDING_CONTROL]|=bit0; //start loopback
-	wm8978_write_reg(WM8978_COMPANDING_CONTROL,WM8978_REGVAL_TAL[WM8978_COMPANDING_CONTROL]);
+// 	WM8978_REGVAL_TAL[WM8978_COMPANDING_CONTROL]|=bit0; //start loopback
+// 	wm8978_write_reg(WM8978_COMPANDING_CONTROL,WM8978_REGVAL_TAL[WM8978_COMPANDING_CONTROL]);
 
-}
+// }
 
 esp_err_t wm8978_deinit(void)
 {
@@ -269,9 +270,9 @@ int wm8978_write_reg(uint8_t reg_addr,uint16_t data)
     i2c_master_write_byte(cmd, buf[0], 1);
     i2c_master_write_byte(cmd, buf[1], 1);
     i2c_master_stop(cmd);
-    res |= i2c_master_cmd_begin(I2C_NUM_1, cmd, 1000 / portTICK_RATE_MS);
+    res |= i2c_master_cmd_begin(BOARD_I2C_NUM, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
-	WM8978_REGVAL_TAL[reg_addr]=data;
+		WM8978_REGVAL_TAL[reg_addr]=data;
     WM_ASSERT(res, "wm_write_reg error", -1);
 	return res;
 }

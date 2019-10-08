@@ -33,3 +33,8 @@ ifdef CONFIG_M5STACK_NODE_BOARD
 COMPONENT_ADD_INCLUDEDIRS += ./driver/wm8978 ./board/m5stack_node
 COMPONENT_SRCDIRS += ./driver/wm8978 ./board/m5stack_node
 endif
+
+ifdef CONFIG_TTGO_NODE_BOARD
+COMPONENT_ADD_INCLUDEDIRS += ./driver/wm8978 ./board/ttgo_node
+COMPONENT_SRCDIRS += ./driver/wm8978 ./board/ttgo_node
+endif

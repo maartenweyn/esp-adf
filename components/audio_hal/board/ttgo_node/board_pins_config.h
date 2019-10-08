@@ -9,40 +9,35 @@
 #include "driver/spi_slave.h"
 
 #define SDCARD_OPEN_FILE_NUM_MAX  5
-#define SDCARD_INTR_GPIO          GPIO_NUM_34
+#define SDCARD_INTR_GPIO          -1
 
-#define BUTTON_REC_ID             GPIO_NUM_36
-#define BUTTON_MODE_ID            GPIO_NUM_39
-#define BUTTON_SET_ID             TOUCH_PAD_NUM9
-#define BUTTON_PLAY_ID            TOUCH_PAD_NUM8
-#define BUTTON_VOLUP_ID           TOUCH_PAD_NUM7
-#define BUTTON_VOLDOWN_ID         TOUCH_PAD_NUM4
+#define BUTTON_REC_ID             -1   //Button A
+#define BUTTON_SET_ID             -1   //Button B
+#define BUTTON_PLAY_ID            -1   //Button C
+#define BUTTON_MODE_ID            -1
 
-#define AUXIN_DETECT_GPIO         GPIO_NUM_12
-#define HEADPHONE_DETCET          GPIO_NUM_19
-#define PA_ENABLE_GPIO            GPIO_NUM_21
+#define BUTTON_VOLUP_ID           -1
+#define BUTTON_VOLDOWN_ID         -1
 
-#define GREEN_LED_GPIO            GPIO_NUM_22
+#define AUXIN_DETECT_GPIO         -1
+#define HEADPHONE_DETCET          -1
+#define PA_ENABLE_GPIO            -1
 
-// #define SDCARD_USE_SPI
-// #define SD_PIN_NUM_MISO 2
-// #define SD_PIN_NUM_MOSI 15
-// #define SD_PIN_NUM_CLK  14
-// #define SD_PIN_NUM_CS   13
-
+#define GREEN_LED_GPIO            GPIO_NUM_15
 #define LEDS_PIN                  22  
-#define LEDS_TYPE                 8 //LED_SK6812_V1
-#define LEDS_NR                   5 
-#define LEDS_INC                  1
+#define LEDS_TYPE                 0
+#define LEDS_NR                   19  
 
-#define UWB_UART_RX  12
-#define UWB_UART_TX  16
+#define SDCARD_USE_SPI
 
+#define SD_PIN_NUM_MISO 2
+#define SD_PIN_NUM_MOSI 15
+#define SD_PIN_NUM_CLK  14
+#define SD_PIN_NUM_CS   13
 
-#define BOARD_I2C_SDA_PIN GPIO_NUM_18
-#define BOARD_I2C_SCL_PIN GPIO_NUM_23
-#define BOARD_I2C_NUM I2C_NUM_1
-
+#define BOARD_I2C_SDA_PIN GPIO_NUM_19
+#define BOARD_I2C_SC2_PIN GPIO_NUM_18
+#define BOARD_I2C_NUM I2C_NUM_0
 
 #define BOARD_PARAMETER_CHECK(TAG, a, action) if(!(a)) { \
         ESP_LOGE(TAG, "LINE: %d, (%s): %s", __LINE__, __FUNCTION__, "Invalid parameter"); \

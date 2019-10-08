@@ -24,6 +24,19 @@
 #define PA_ENABLE_GPIO            -1
 
 #define GREEN_LED_GPIO            GPIO_NUM_15
+#define LEDS_PIN                  15  
+#define LEDS_TYPE                 8 //LED_SK6812_V1
+#define LEDS_NR                   12  
+
+#define SDCARD_USE_SPI
+#define SD_PIN_NUM_MISO 19
+#define SD_PIN_NUM_MOSI 23
+#define SD_PIN_NUM_CLK  18
+#define SD_PIN_NUM_CS   4
+
+#define BOARD_I2C_SDA_PIN GPIO_NUM_21
+#define BOARD_I2C_SCL_PIN GPIO_NUM_22
+#define BOARD_I2C_NUM I2C_NUM_1
 
 #define BOARD_PARAMETER_CHECK(TAG, a, action) if(!(a)) { \
         ESP_LOGE(TAG, "LINE: %d, (%s): %s", __LINE__, __FUNCTION__, "Invalid parameter"); \

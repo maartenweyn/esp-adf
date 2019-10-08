@@ -68,7 +68,7 @@ esp_err_t sdcard_mount(const char *base_path)
     };
 
     sdmmc_card_t *card;
-    ESP_LOGI(TAG, "Trying to mount with base path=%s", base_path);
+    ESP_LOGI(TAG, "Trying to mount with base path=%s with slot with %d", base_path, slot_config.width);
     esp_err_t ret = esp_vfs_fat_sdmmc_mount(base_path, &host, &slot_config, &mount_config, &card);
 
     switch (ret) {
