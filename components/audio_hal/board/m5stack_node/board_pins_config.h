@@ -8,6 +8,8 @@
 #include "driver/spi_master.h"
 #include "driver/spi_slave.h"
 
+#include "wm8978.h"
+
 #define SDCARD_OPEN_FILE_NUM_MAX  5
 #define SDCARD_INTR_GPIO          -1
 
@@ -27,6 +29,10 @@
 #define LEDS_PIN                  15  
 #define LEDS_TYPE                 8 //LED_SK6812_V1
 #define LEDS_NR                   12  
+#define LEDS_INC                  3
+
+#define UWB_UART_RX  22// 12
+#define UWB_UART_TX  16
 
 #define SDCARD_USE_SPI
 #define SD_PIN_NUM_MISO 19
