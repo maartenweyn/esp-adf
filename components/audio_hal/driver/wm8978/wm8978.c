@@ -174,15 +174,16 @@ int wm8978_config_i2s(audio_hal_codec_mode_t mode, audio_hal_codec_i2s_iface_t *
  *     - (-1)  Error
  *     - (0)   Success
  */
-int wm8978_set_voice_volume(uint8_t volume)
+int wm8978_set_voice_volume(int volume)
 {
 	int ret = 0;
-	// volume&=0X3F;
-	// if(volume==0)volume|=1<<6;
-	// ret = wm8978_write_reg(WM8978_LOUT1_HP_CONTROL, volume);//for earphone
-	// ret |= wm8978_write_reg(WM8978_ROUT1_HP_CONTROL, volume|(1<<8));//for earphone
-	// ret |= wm8978_write_reg(WM8978_LOUT2_SPK_CONTROL, volume);
-	// ret |= wm8978_write_reg(WM8978_ROUT2_SPK_CONTROL, volume|(1<<8));
+	uint8_t vol = (uint8_t) (0.63 * (float) volume);
+	vol&=0X3F;
+	if(vol==0) vol |= 1<<6;
+	ret = wm8978_write_reg(WM8978_LOUT1_HP_CONTROL, vol);//for earphone
+	ret |= wm8978_write_reg(WM8978_ROUT1_HP_CONTROL, vol|(1<<8));//for earphone
+	ret |= wm8978_write_reg(WM8978_LOUT2_SPK_CONTROL, vol);
+	ret |= wm8978_write_reg(WM8978_ROUT2_SPK_CONTROL, vol|(1<<8));
 	return ret;
 }
 

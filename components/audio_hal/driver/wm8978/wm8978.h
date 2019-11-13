@@ -112,7 +112,7 @@ void WM8978_EQ5_Set(uint8_t cfreq,uint8_t gain);
 // void aplay(char* filename);
 
 int wm8978_config_i2s(audio_hal_codec_mode_t mode, audio_hal_codec_i2s_iface_t *iface);
-int wm8978_set_voice_volume(uint8_t volume);
+int wm8978_set_voice_volume(int volume);
 int wm8978_get_voice_volume(int *volume);
 int wm8978_ctrl_state(audio_hal_codec_mode_t mode, audio_hal_ctrl_t ctrl_state);
 

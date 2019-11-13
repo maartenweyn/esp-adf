@@ -34,9 +34,12 @@
 #define LEDS_TYPE                 8 //LED_SK6812_V1
 #define LEDS_NR                   5 
 #define LEDS_INC                  1
+#define LEDS_ON_NR                5
+#define LEDS_ON_ID                {0, 1, 2, 3, 4}
 
 #define UWB_UART_RX  22// 12
 #define UWB_UART_TX  16
+#define UWB_UART_BAUDRATE   500000
 
 
 #define BOARD_I2C_SDA_PIN GPIO_NUM_18

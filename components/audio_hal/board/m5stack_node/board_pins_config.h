@@ -30,9 +30,12 @@
 #define LEDS_TYPE                 8 //LED_SK6812_V1
 #define LEDS_NR                   12  
 #define LEDS_INC                  3
+#define LEDS_ON_NR                4
+#define LEDS_ON_ID                {2,3, 8, 9}
 
-#define UWB_UART_RX  22// 12
-#define UWB_UART_TX  16
+#define UWB_UART_RX  GPIO_NUM_16
+#define UWB_UART_TX  GPIO_NUM_26
+#define UWB_UART_BAUDRATE   38400
 
 #define SDCARD_USE_SPI
 #define SD_PIN_NUM_MISO 19
