@@ -16,6 +16,11 @@
 #define BUTTON_REC_ID             GPIO_NUM_39   //Button A
 #define BUTTON_SET_ID             GPIO_NUM_38   //Button B
 #define BUTTON_PLAY_ID            GPIO_NUM_37   //Button C
+
+#define BUTTON_A             GPIO_NUM_39   //Button A
+#define BUTTON_B             GPIO_NUM_38   //Button B
+#define BUTTON_C             GPIO_NUM_37   //Button C
+
 #define BUTTON_MODE_ID            -1
 
 #define BUTTON_VOLUP_ID           -1
@@ -30,8 +35,8 @@
 #define LEDS_TYPE                 8 //LED_SK6812_V1
 #define LEDS_NR                   12  
 #define LEDS_INC                  3
-#define LEDS_ON_NR                4
-#define LEDS_ON_ID                {2,3, 8, 9}
+#define LEDS_ON_NR                2
+#define LEDS_ON_ID                {2, 9}
 
 #define UWB_UART_RX  GPIO_NUM_16
 #define UWB_UART_TX  GPIO_NUM_26

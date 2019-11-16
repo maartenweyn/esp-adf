@@ -29,7 +29,7 @@ extern "C" {
 
 #define HTTPD_DEFAULT_CONFIG() {                        \
         .task_priority      = tskIDLE_PRIORITY+5,       \
-        .stack_size         = 4096,                     \
+        .stack_size         = 5120,                     \
         .server_port        = 80,                       \
         .ctrl_port          = 32768,                    \
         .max_open_sockets   = 7,                        \
